@@ -5,21 +5,9 @@ const jwt  = require ('jsonwebtoken')
 //     readUser : readUser 
 // } = require ('../controllers/tasks')
 
-const {userregistry : userregistry } = require('../controllers/useregisteration')
-const { login } = require('../controllers/userlogin')
-// const {
-//     register ,
-//     login ,
-//     logout 
-// } = require ()
+const {userRegistry : registerUser } = require('../controllers/user-registration')
+const { login } = require('../controllers/user-login')
 
-// const {readUser : readUser}  = require ('../controllers/tasks')
-// import { readUser } from "../controllers/tasks"
-// router.route('/api/v1/user/register').post( registerfunc =>{
-    
-// })
-
-// router.route('/api/v1/logout').get(logoutfunc)
 router.route('/api/v1/test').get((req, res )=>{
     const accessToken = req.headers['authorization'].split('Bearer ')[1];
     console.log(accessToken)
@@ -36,7 +24,7 @@ router.route('/api/v1/user/registeration').post((req , res , next ) => {
     let body = {...req.body}
     console.log(body.username , body.password)
     try {
-        userregistry(body.username , body.password)
+        userRegistry(body.username , body.password)
         res.status(201).send("Success ! ")
         
     } catch (error) {

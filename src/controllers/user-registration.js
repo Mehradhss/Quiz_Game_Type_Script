@@ -1,11 +1,9 @@
 
 var typeorm = require("typeorm");
-var {dataSource} = require('../src/data-source')
+var {dataSource} = require('../data-source')
 
-async function userregistry(username , passwd){
+async function registerUser(username , passwd){
   try {
-    
-    
       var newuser = {
         username : username,
         password: passwd
@@ -13,8 +11,8 @@ async function userregistry(username , passwd){
       var userRepository = dataSource.getRepository("user")
       userRepository
           .save(newuser)
-          .then(function (savedusers) {
-              console.log("Post has been saved: ", savedusers)
+          .then(function (savedUsers) {
+              console.log("Post has been saved: ", savedUsers)
               console.log("Now lets load all posts: ")
               return userRepository.find()
           })
@@ -25,18 +23,12 @@ async function userregistry(username , passwd){
           .catch(function (error) {
         console.log("Error: ", error)
   })
-// }
-// else {
-//   console.log("error")
-// }
-  
-    
-  } catch (error1) {
-    
+  } catch (err) {
+    console.log(err);
   }
  
 }
 
 module.exports = {
-  userregistry
+    registerUser
 }
