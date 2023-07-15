@@ -1,20 +1,17 @@
 module.exports = {
-    name: "user",
+    name: "game_question",
     columns: {
-        id: {
+        game_question_primary_id: {
             primary: true,
             type: "int",
             generated: true
         },
-        username: {
-            unique: true,
-            type: "varchar",
-        },
-        password: {
-            type: "varchar"
-        },
-        points: {
+        game_id: {
             type: "int"
+        },
+        question_id: {
+            unique: true,
+            type: "varchar"
         }
     },
     relations: {}

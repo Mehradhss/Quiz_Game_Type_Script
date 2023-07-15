@@ -3,7 +3,7 @@ const router = express.Router()
 const jwt = require('jsonwebtoken')
 const {userRegistry: registerUser} = require('../controllers/user-registration')
 const {login} = require('../controllers/user-login')
-
+const {testingGame} = require ('../controllers/test')
 router.route('/api/v1/test').get((req, res) => {
     const accessToken = req.headers['authorization'].split('Bearer ')[1];
     console.log(accessToken)
@@ -34,6 +34,17 @@ router.route('/api/v1/user/login').post((req, res, next) => {
         login(req, res, body.username, body.password)
     } catch (error) {
         res.status(408).send()
+        console.log(error)
+    }
+})
+router.route("/test").get((req, res,) => {
+    try{
+        testingGame()
+        res.status(201).json({
+            "tested" : true
+        })
+    } catch(err){
+        res.status(400).send()
         console.log(error)
     }
 })

@@ -1,19 +1,18 @@
 module.exports = {
-    name: "user",
+    name: "game_answer",
     columns: {
         id: {
             primary: true,
             type: "int",
             generated: true
         },
-        username: {
-            unique: true,
-            type: "varchar",
+        game_question_id: {
+            type: "int"
         },
-        password: {
-            type: "varchar"
+        recieved_answer_id: {
+            type: "int"
         },
-        points: {
+        player_id: {
             type: "int"
         }
     },

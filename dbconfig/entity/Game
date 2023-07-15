@@ -1,23 +1,33 @@
 module.exports = {
-    name: "Game",
+    name: "game",
     columns: {
-        id: {
+        game_primary_id: {
             primary: true,
             type: "int",
             generated: true
         },
         host_id : {
             unique: true,
-            type: "int",
+            type: "int"
         },
-        guset_id : {
+        guest_id : {
             unique: true ,
             type: "int"
-        }
-    },
-    CreateDateColumn : {
-        created_at: {
-            type : "date"
+        },
+        createdAt: {
+            name: 'created_at',
+            type: 'datetime',
+            createDate: true
+        },
+        status : {
+            type :"varchar"
+        },
+        finishedAt : {
+            name : 'finished_at',
+            type : 'datetime'
+        },
+        game_winner_id : {
+            type : "int"
         }
     },
     relations: {}
