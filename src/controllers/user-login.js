@@ -1,4 +1,4 @@
-const {dataSource} = require('../data-source')
+const {dataSource} = require('../../dbconfig/data-source')
 const jwt = require('jsonwebtoken')
 require('dotenv').config()
 

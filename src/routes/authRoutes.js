@@ -1,41 +1,37 @@
-const express = require ('express')
+const express = require('express')
 const router = express.Router()
-const jwt  = require ('jsonwebtoken')
-// const {
-//     readUser : readUser 
-// } = require ('../controllers/tasks')
+const jwt = require('jsonwebtoken')
+const {userRegistry: registerUser} = require('../controllers/user-registration')
+const {login} = require('../controllers/user-login')
 
-const {userRegistry : registerUser } = require('../controllers/user-registration')
-const { login } = require('../controllers/user-login')
-
-router.route('/api/v1/test').get((req, res )=>{
+router.route('/api/v1/test').get((req, res) => {
     const accessToken = req.headers['authorization'].split('Bearer ')[1];
     console.log(accessToken)
-    jwt.verify(accessToken  , process.env.ACCESS_TOKEN_SECRET , (err, user) => {
+    jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
         if (err) res.status(401).json({
-            "login" : false 
+            "login": false
         })
         res.status(201).json({
-            "login" : true 
+            "login": true
         })
     })
 })
-router.route('/api/v1/user/registeration').post((req , res , next ) => {
+router.route('/api/v1/user/registeration').post((req, res, next) => {
     let body = {...req.body}
-    console.log(body.username , body.password)
+    console.log(body.username, body.password)
     try {
-        userRegistry(body.username , body.password)
+        userRegistry(body.username, body.password)
         res.status(201).send("Success ! ")
-        
+
     } catch (error) {
-        next (error)
+        next(error)
     }
 })
 
-router.route('/api/v1/user/login').post((req , res , next ) => {
+router.route('/api/v1/user/login').post((req, res, next) => {
     let body = {...req.body}
     try {
-        login(req, res ,body.username , body.password )        
+        login(req, res, body.username, body.password)
     } catch (error) {
         res.status(408).send()
         console.log(error)

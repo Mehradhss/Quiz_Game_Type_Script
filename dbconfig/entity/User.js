@@ -1,4 +1,3 @@
-
 module.exports = {
     name: "user",
     columns: {
@@ -8,14 +7,12 @@ module.exports = {
             generated: true
         },
         username: {
-            unique : true ,
+            unique: true,
             type: "varchar",
         },
         password: {
             type: "varchar"
         }
     },
-    relations: {
-
-    }
+    relations: {}
 };
