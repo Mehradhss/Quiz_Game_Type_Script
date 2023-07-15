@@ -1,0 +1,24 @@
+module.exports = {
+    name: "Game",
+    columns: {
+        id: {
+            primary: true,
+            type: "int",
+            generated: true
+        },
+        host_id : {
+            unique: true,
+            type: "int",
+        },
+        guset_id : {
+            unique: true ,
+            type: "int"
+        }
+    },
+    CreateDateColumn : {
+        created_at: {
+            type : "date"
+        }
+    },
+    relations: {}
+};
