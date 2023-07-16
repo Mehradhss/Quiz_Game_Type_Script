@@ -28,7 +28,7 @@ module.exports = {
             joinColumn: {
                 name: 'related_question_id',
                 referencedColumnName: 'question_primary_id'
-            },
+            }
         }
     }
 };
