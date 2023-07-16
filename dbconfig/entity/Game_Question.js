@@ -1,7 +1,7 @@
 module.exports = {
     name: "game_question",
     columns: {
-        game_question_primary_id: {
+        id: {
             primary: true,
             type: "int",
             generated: true
@@ -23,7 +23,7 @@ module.exports = {
             inverseSide: 'game_questions',
             joinColumn: {
                 name: 'question_id',
-                referencedColumnName: 'question_primary_id'
+                referencedColumnName: 'id'
             },
             game: {
                 target: "game",
@@ -32,7 +32,7 @@ module.exports = {
                 inverseSide: 'game_questions',
                 joinColumn: {
                     name: 'game_id',
-                    referencedColumnName: 'game_primary_id'
+                    referencedColumnName: 'id'
                 }
             }
         }

@@ -3,16 +3,16 @@ var EntitySchema = require("typeorm").EntitySchema
 module.exports = {
     name: "answer",
     columns: {
-        answer_id: {
+        id: {
             primary: true,
             type: "int",
             generated: true
         },
-        answer_text: {
+        text: {
             unique: true,
             type: "varchar"
         },
-        related_question_id: {
+        question_id: {
             type: "int"
         },
         is_correct: {
@@ -26,8 +26,8 @@ module.exports = {
             inverseSide: 'answers',
             // joinTable: true,
             joinColumn: {
-                name: 'related_question_id',
-                referencedColumnName: 'question_primary_id'
+                name: 'question_id',
+                referencedColumnName: 'id'
             }
         }
     }

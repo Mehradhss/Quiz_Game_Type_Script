@@ -1,7 +1,7 @@
 module.exports = {
     name: "user",
     columns: {
-        player_id: {
+        id: {
             primary: true,
             type: "int",
             generated: true
@@ -25,7 +25,7 @@ module.exports = {
             // eager: true,
             inverseSide: 'host',
             joinColumn: {
-                name: 'player_id',
+                name: 'id',
                 referencedColumnName: 'host_id'
             }
         },
@@ -36,19 +36,8 @@ module.exports = {
             // eager: true,
             inverseSide: 'guest',
             joinColumn: {
-                name: 'player_id',
+                name: 'id',
                 referencedColumnName: 'guest_id'
-            },
-            game_answers: {
-                target: "user",
-                type: "one-to-many",
-                // joinTable: true,
-                // eager: true,
-                inverseSide: 'user_answers',
-                joinColumn: {
-                    name: 'player_id',
-                    referencedColumnName: 'answers_player_id'
-                }
             }
         }
     }

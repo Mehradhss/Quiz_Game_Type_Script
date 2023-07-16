@@ -1,10 +1,10 @@
 module.exports = {
     name: "game",
     columns: {
-        game_primary_id: {
+        id: {
             primary: true,
             type: "int",
-            generated: true
+            generated: true,
         },
         host_id: {
             unique: true,
@@ -38,7 +38,7 @@ module.exports = {
             eager: true,
             inverseSide: 'game',
             joinColumn: {
-                name: 'game_primary_id',
+                name: 'id',
                 referencedColumnName: 'game_id'
             }
         },

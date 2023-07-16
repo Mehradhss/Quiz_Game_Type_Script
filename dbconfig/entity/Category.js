@@ -1,12 +1,12 @@
 module.exports = {
     name: "category",
     columns: {
-        category_id: {
+        id: {
             primary: true,
             type: "int",
             generated: true
         },
-        category_text: {
+        text: {
             unique: true,
             type: "varchar"
         },
@@ -20,8 +20,8 @@ module.exports = {
             eager: true,
             cascade: true,
             joinColumn: {
-                name: 'category_id',
-                referencedColumnName: 'question_related_category_id'
+                name: 'id',
+                referencedColumnName: 'category_id'
             },
         }
     }

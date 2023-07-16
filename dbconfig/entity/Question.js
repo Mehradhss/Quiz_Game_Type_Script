@@ -1,16 +1,16 @@
 module.exports = {
     name: "question",
     columns: {
-        question_primary_id: {
+        id: {
             primary: true,
             type: "int",
             generated: true
         },
-        question_test: {
+        text: {
             unique: true,
             type: "varchar"
         },
-        question_related_category_id: {
+        category_id: {
             unique: true,
             type: "int"
         }
@@ -23,8 +23,8 @@ module.exports = {
             eager: true,
             inverseSide: 'question',
             joinColumn: {
-                name: 'question_primary_id',
-                referencedColumnName: 'related_question_id'
+                name: 'id',
+                referencedColumnName: 'id'
             }
         },
         category: {
@@ -33,7 +33,7 @@ module.exports = {
             inverseSide: 'questions',
             // joinTable: true,
             joinColumn: {
-                name: 'question_related_category_id',
+                name: 'category_id',
                 referencedColumnName: 'category_id'
             }
         },
@@ -43,7 +43,7 @@ module.exports = {
             // joinTable: true,
             inverseSide: 'questions',
             joinColumn: {
-                name: 'question_primary_id',
+                name: 'id',
                 referencedColumnName: 'question_id'
             }
         }
