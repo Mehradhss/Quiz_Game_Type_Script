@@ -5,6 +5,7 @@ module.exports = {
             primary: true,
             type: "int",
             generated: true,
+            nullable: false
         },
         host_id: {
             unique: true,
@@ -12,7 +13,8 @@ module.exports = {
         },
         guest_id: {
             unique: true,
-            type: "int"
+            type: "int",
+            nullable: true
         },
         createdAt: {
             name: 'created_at',
@@ -50,19 +52,19 @@ module.exports = {
             inverseSide: 'game_host',
             joinColumn: {
                 name: 'host_id',
-                referencedColumnName: 'player_id'
+                referencedColumnName: 'id'
             }
         },
-        guest: {
-            target: "user",
-            type: "one-to-one",
-            // joinTable: true,
-            // eager: true,
-            inverseSide: 'game_guest',
-            joinColumn: {
-                name: 'guest_id',
-                referencedColumnName: 'player_id'
-            }
-        }
+        // guest: {
+        //     target: "user",
+        //     type: "one-to-one",
+        //     // joinTable: true,
+        //     // eager: true,
+        //     inverseSide: 'game_guest',
+        //     joinColumn: {
+        //         name: 'guest_id',
+        //         referencedColumnName: 'id'
+        //     }
+        // }
     }
 };

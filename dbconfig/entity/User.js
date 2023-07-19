@@ -4,7 +4,8 @@ module.exports = {
         id: {
             primary: true,
             type: "int",
-            generated: true
+            generated: true,
+            nullable: false
         },
         username: {
             unique: true,
@@ -14,31 +15,32 @@ module.exports = {
             type: "varchar"
         },
         points: {
-            type: "int"
+            type: "int",
+            nullable: true
         }
     },
     relations: {
-        game_host: {
-            target: "game",
-            type: "one-to-one",
-            // joinTable: true,
-            // eager: true,
-            inverseSide: 'host',
-            joinColumn: {
-                name: 'id',
-                referencedColumnName: 'host_id'
-            }
-        },
-        game_guest: {
-            target: "game",
-            type: "one-to-one",
-            // joinTable: true,
-            // eager: true,
-            inverseSide: 'guest',
-            joinColumn: {
-                name: 'id',
-                referencedColumnName: 'guest_id'
-            }
-        }
+        // game_host: {
+        //     target: "game",
+        //     type: "one-to-one",
+        //     // joinTable: true,
+        //     // eager: true,
+        //     inverseSide: 'host',
+        //     joinColumn: {
+        //         name: 'id',
+        //         referencedColumnName: 'host_id'
+        //     }
+        // },
+        // game_guest: {
+        //     target: "game",
+        //     type: "one-to-one",
+        //     // joinTable: true,
+        //     // eager: true,
+        //     inverseSide: 'guest',
+        //     joinColumn: {
+        //         name: 'id',
+        //         referencedColumnName: 'guest_id'
+        //     }
+        // }
     }
 };

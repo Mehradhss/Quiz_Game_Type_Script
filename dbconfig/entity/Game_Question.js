@@ -4,14 +4,15 @@ module.exports = {
         id: {
             primary: true,
             type: "int",
-            generated: true
+            generated: true,
+            nullable: false
         },
         game_id: {
             type: "int"
         },
         question_id: {
             unique: true,
-            type: "varchar"
+            type: "int"
         }
     },
     relations: {

@@ -4,7 +4,7 @@ const asyncWrapper = (func) => {
             await func(req, res, next)
 
         } catch (error) {
-            next(error)
+            nextr(erro)
         }
     }
 }

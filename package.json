@@ -1,7 +1,6 @@
 {
   "name": "quizlike_game",
   "version": "1.0.0",
-  "description": "",
   "main": "main.js",
   "scripts": {
     "sys": "nodemon app.js",
@@ -26,6 +25,16 @@
     "mssql": "^9.1.1",
     "pg": "^8.4.0",
     "reflect-metadata": "^0.1.13",
+    "socket.io": "^4.7.1",
     "typeorm": "0.3.17"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Mehradhss/Quiz_Like_Game.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Mehradhss/Quiz_Like_Game/issues"
+  },
+  "homepage": "https://github.com/Mehradhss/Quiz_Like_Game#readme",
+  "description": ""
 }

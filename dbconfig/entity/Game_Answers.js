@@ -4,7 +4,8 @@ module.exports = {
         id: {
             primary: true,
             type: "int",
-            generated: true
+            generated: true,
+            nullable: false
         },
         game_question_id: {
             type: "int"
@@ -34,7 +35,7 @@ module.exports = {
             // eager: true,
             joinColumn: {
                 name: 'player_id',
-                referencedColumnName: 'player_id'
+                referencedColumnName: 'id'
             }
         }
     }

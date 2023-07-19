@@ -4,7 +4,8 @@ module.exports = {
         id: {
             primary: true,
             type: "int",
-            generated: true
+            generated: true,
+            nullable: false
         },
         text: {
             unique: true,
@@ -34,7 +35,7 @@ module.exports = {
             // joinTable: true,
             joinColumn: {
                 name: 'category_id',
-                referencedColumnName: 'category_id'
+                referencedColumnName: 'id'
             }
         },
         game_questions: {
