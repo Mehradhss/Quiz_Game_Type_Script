@@ -1,24 +1,22 @@
-// const socketIO = require('socket.io')
-const {getIo} = require('../controllers/Connection')
-//
-//
+const {dataSource} = require('../../dbconfig/data-source')
 
-//
-async function createGame(){
-    let io = getIo()
-    try{
-        io.on ('connection', (socket) => {
-        const clientId = socket.id;
-        console.log(`A user connected with ID: ${clientId}`);
-        socket.on('createGame', (data) => {
-            const roomId = generateRoomId()
-            socket.join(roomId)
-            socket.emit('Game Created' , {roomId: roomId})
-            console.log('Game Created With Room id : ${roomId}')
-        })
-    })
-    }catch(error){
-        console.log(error)
+let foundGame
+
+async function createGame( hostid ,status) {
+    try {
+        const newGame = {
+            host_id: hostid,
+            status: status
+        }
+        const gameRepository = await dataSource.getRepository("game")
+        await gameRepository
+            .save(newGame).then((savedGame) => {
+                console.log(savedGame)
+                foundGame = savedGame
+            })
+        return foundGame
+    } catch (err) {
+        console.log(`creation err is ${err}`);
     }
 }
 

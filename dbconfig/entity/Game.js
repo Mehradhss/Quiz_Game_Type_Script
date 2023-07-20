@@ -8,28 +8,32 @@ module.exports = {
             nullable: false
         },
         host_id: {
-            unique: true,
+            unique: false,
             type: "int"
         },
         guest_id: {
-            unique: true,
+            unique: false,
             type: "int",
             nullable: true
         },
         createdAt: {
             name: 'created_at',
             type: 'datetime',
-            createDate: true
+            createDate: true,
+            nullable: true,
+            unique: false
         },
         status: {
             type: "varchar"
         },
         finishedAt: {
             name: 'finished_at',
-            type: 'datetime'
+            type: 'datetime',
+            nullable: true
         },
         game_winner_id: {
-            type: "int"
+            type: "int",
+            nullable: true
         }
     },
     relations: {
@@ -37,7 +41,7 @@ module.exports = {
             target: "game_question",
             type: "one-to-many",
             // joinTable: true,
-            eager: true,
+            // eager: true,
             inverseSide: 'game',
             joinColumn: {
                 name: 'id',

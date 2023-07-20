@@ -1,4 +1,3 @@
-const typeORM = require("typeorm");
 const {dataSource} = require('../../dbconfig/data-source')
 
 async function registerUser(req, res, username, passwd) {
@@ -16,7 +15,7 @@ async function registerUser(req, res, username, passwd) {
                     return userRepository.find()
                 })
                 .then(function (allPosts) {
-                    console.log("All posts: ", allPosts)
+                    console.log("All users: ", allPosts)
                     // dataSource.close()
                     res.status(201).send('User Created Successfully')
                 })
