@@ -4,7 +4,7 @@ module.exports = {
         id: {
             primary: true,
             type: "int",
-            generated: true,
+            // generated: true,
             nullable: false
         },
         text: {

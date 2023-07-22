@@ -12,7 +12,9 @@ module.exports = {
         },
         question_id: {
             unique: true,
-            type: "int"
+            type: "int",
+            nullable: true
+
         }
     },
     relations: {
@@ -21,7 +23,7 @@ module.exports = {
             type: "one-to-many",
             // joinTable: true,
             eager: true,
-            inverseSide: 'game_questions',
+            // inverseSide: 'game_questions',
             joinColumn: {
                 name: 'question_id',
                 referencedColumnName: 'id'

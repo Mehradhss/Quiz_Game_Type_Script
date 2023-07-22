@@ -4,7 +4,7 @@ module.exports = {
         id: {
             primary: true,
             type: "int",
-            generated: true,
+            // generated: true,
             nullable: false
         },
         text: {
@@ -12,7 +12,7 @@ module.exports = {
             type: "varchar"
         },
         category_id: {
-            unique: true,
+            // unique: true,
             type: "int"
         }
     },
@@ -38,15 +38,15 @@ module.exports = {
                 referencedColumnName: 'id'
             }
         },
-        game_questions: {
-            target: "game_question",
-            type: "many-to-one",
-            // joinTable: true,
-            inverseSide: 'questions',
-            joinColumn: {
-                name: 'id',
-                referencedColumnName: 'question_id'
-            }
-        }
+        // game_questions: {
+        //     target: "game_question",
+        //     type: "many-to-one",
+        //     // joinTable: true,
+        //     inverseSide: 'questions',
+        //     joinColumn: {
+        //         name: 'id',
+        //         referencedColumnName: 'question_id'
+        //     }
+        // }
     }
 };
