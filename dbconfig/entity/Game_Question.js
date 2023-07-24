@@ -13,21 +13,22 @@ module.exports = {
         question_id: {
             unique: true,
             type: "int",
-            nullable: true
-
+            nullable: true,
+            primary : false
         }
     },
     relations: {
         questions: {
             target: "question",
-            type: "one-to-many",
+            type: "many-to-one",
             // joinTable: true,
-            eager: true,
-            // inverseSide: 'game_questions',
+            // eager: true,
+            inverseSide: 'game_questions',
             joinColumn: {
-                name: 'question_id',
+                name: "question_id",
                 referencedColumnName: 'id'
-            },
+            }
+        },
             game: {
                 target: "game",
                 type: "many-to-one",
@@ -40,4 +41,3 @@ module.exports = {
             }
         }
     }
-};

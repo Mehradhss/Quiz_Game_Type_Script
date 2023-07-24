@@ -4,7 +4,7 @@ module.exports = {
         id: {
             primary: true,
             type: "int",
-            // generated: true,
+            generated: true,
             nullable: false
         },
         text: {
@@ -17,6 +17,16 @@ module.exports = {
         }
     },
     relations: {
+        game_questions: {
+            target: "game_question",
+            type: "one-to-many",
+            // joinTable: true,
+            // inverseSide: 'questions',
+            joinColumn: {
+                name: 'id',
+                referencedColumnName: 'question_id'
+            }
+        },
         answers: {
             target: "answer",
             type: "one-to-many",
@@ -38,15 +48,10 @@ module.exports = {
                 referencedColumnName: 'id'
             }
         },
-        // game_questions: {
-        //     target: "game_question",
-        //     type: "many-to-one",
-        //     // joinTable: true,
-        //     inverseSide: 'questions',
-        //     joinColumn: {
-        //         name: 'id',
-        //         referencedColumnName: 'question_id'
-        //     }
-        // }
+        games : {
+            target : 'game',
+            type : 'many-to-many',
+            inverseSide: 'questions'
+        }
     }
 };

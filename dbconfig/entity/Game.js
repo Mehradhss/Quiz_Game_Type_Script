@@ -70,5 +70,13 @@ module.exports = {
         //         referencedColumnName: 'id'
         //     }
         // }
+
+    questions: {
+        target: 'question',
+        type: 'many-to-many',
+        inverseSide: 'games',
+        cascade: true,
+        joinTable: true
     }
-};
+}
+}
