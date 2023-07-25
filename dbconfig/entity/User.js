@@ -20,17 +20,19 @@ module.exports = {
         }
     },
     relations: {
-        // game_host: {
-        //     target: "game",
-        //     type: "one-to-one",
-        //     // joinTable: true,
-        //     // eager: true,
-        //     inverseSide: 'host',
-        //     joinColumn: {
-        //         name: 'id',
-        //         referencedColumnName: 'host_id'
-        //     }
-        // },
+        games: {
+            target: "game",
+            type: "many-to-many",
+            // joinTable: true,
+            // eager: true,
+            inverseSide: 'players',
+            // joinColumn: {
+            //     name: 'id',
+            //     referencedColumnName: 'host_id'
+            // }
+            cascade: true,
+            joinTable: true
+        }
         // game_guest: {
         //     target: "game",
         //     type: "one-to-one",

@@ -48,17 +48,22 @@ module.exports = {
                 referencedColumnName: 'game_id'
             }
         },
-        host: {
-            target: "user",
-            type: "one-to-one",
-            // joinTable: true,
-            // eager: true,
-            inverseSide: 'game_host',
-            joinColumn: {
-                name: 'host_id',
-                referencedColumnName: 'id'
-            }
+        players : {
+            target: 'user',
+            type: 'many-to-many',
+            inverseSide: 'games'
         },
+        // host: {
+        //     target: "user",
+        //     type: "one-to-one",
+        //     // joinTable: true,
+        //     // eager: true,
+        //     inverseSide: 'game_host',
+        //     joinColumn: {
+        //         name: 'host_id',
+        //         referencedColumnName: 'id'
+        //     }
+        // },
         // guest: {
         //     target: "user",
         //     type: "one-to-one",
@@ -77,6 +82,15 @@ module.exports = {
         inverseSide: 'games',
         cascade: true,
         joinTable: true
-    }
+    },
+        answers: {
+             target: 'game_answer',
+            type: 'one-to-many',
+            inverseSide: 'games',
+            joinColumn: {
+                 name : 'id',
+                referencedColumnName: 'game_id'
+            }
+        }
 }
 }

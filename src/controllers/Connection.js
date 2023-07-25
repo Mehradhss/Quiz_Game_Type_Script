@@ -6,7 +6,7 @@ const {createGame} = require('../controllers/GameCreation')
 const {findGame} = require('../controllers/FindGame')
 const redis = require('../redis-config')
 const {dataSource} = require('../../dbconfig/data-source')
-const {startGame} = require('./GameStart')
+const {startGame} = require('./GameJoin')
 const {getQuestion} = require('./FetchQuestion')
 const {gameInit} = require('./GameFirstInit')
 const {getGameQuestions} = require('./GameQuestions')
@@ -27,7 +27,7 @@ function createSocketConnection(server, token) {
         const accessToken = socket.handshake.headers.authorization.split('Bearer ')[1]
         const user = verify(accessToken)
         socket.id = user.id
-        const clientId = socket.id;
+        const clientId = socket.id
         console.log(`A user connected with ID: ${clientId}`);
         socket.on('createGame', async (data) => {
             const roomId = generateRoomId()
@@ -81,7 +81,7 @@ function createSocketConnection(server, token) {
                 let idis = Array.from(room);
                 console.log(idis)
             } else if (room && room.size > 2) {
-                socket.emit('gameJoinError', {message: 'Uanble to join the game. Room is full .'});
+                socket.emit('gameJoinError', {message: 'Unable to join the game. Room is full .'});
                 console.log('Room is full');
             } else {
                 socket.emit('gameJoinError', {message: 'Unable to join The Game'})
@@ -119,6 +119,12 @@ function createSocketConnection(server, token) {
                                     fetchedQuestion = await getQuestion(1 , temp )
                                     await temp.pop(fetchedQuestion)
                                     console.log(fetchedQuestion)
+                                    // fetchedQuestion.answers.forEach(async (answer) => {
+                                    //     if (answer.is_correct === true) {
+                                    //         await Answers.push(answer)
+                                    //     }
+                                    //     if ()
+                                    // })
                                     // }
                                     // })
                                 } catch (error) {
@@ -161,13 +167,24 @@ function createSocketConnection(server, token) {
         //     }
         //
         // })
-        socket.on('test' , () => {
+        socket.on('test' , async () => {
             try{
-                // const test = getGameQuestionsNewer(1 , 1)
-                socket.on('test2' , () => {
-                    console.log('test')
-                    }
-                )
+                const gameRepository = await dataSource.getRepository('game')
+                const game_AnswerRepository = await dataSource.getRepository('game_answer')
+
+                    const fetchedQuestion = await game_AnswerRepository
+                    .createQueryBuilder('game_answer')
+                    // .select('')
+                    .leftJoinAndSelect('game_answer.games', 'game')
+                        // .innerJoin('game_answer')
+                    //     .from('game_answer')
+                    .where('game_answer.game_id = :GameId',  { GameId: 1 })
+                    // .andWhere('question.id = :questionId', { questionId })
+                    .getMany();
+                console.log(fetchedQuestion)
+
+
+
 
                 }catch (error) {
                 console.log(`getgamequestionenewer error is  : ${error}`)

@@ -52,6 +52,15 @@ module.exports = {
             target : 'game',
             type : 'many-to-many',
             inverseSide: 'questions'
+        } ,
+        game_answer : {
+            target: 'game_answer',
+            type: 'many-to-one',
+            inverseSide :'question',
+            joinColumn:{
+                name: 'id' ,
+                referencedColumnName : 'game_question_id'
+            }
         }
     }
-};
+}
