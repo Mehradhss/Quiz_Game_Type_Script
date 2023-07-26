@@ -187,25 +187,45 @@ function createSocketConnection(server, token) {
                     // .andWhere('question.id = :questionId', { questionId })
                     .getMany().then(async (fetched) =>{
                         console.log(fetched)
-                            counter = fetched.length
-                            // while(counter !== 0) {
-                            //     const questions = await questionRepository.find({
-                            //         where: {
-                            //             id: typeORM.Not(9), // Use the Not condition to exclude the specified IDs
-                            //         },
-                            //     })
                             let gameQuestions = await questionRepository.find()
                             let temp = gameQuestions
-                            fetched.forEach(async (sentQuestion) =>{
-                                    const question = await questionRepository.find({
-                                        where: {
-                                            id: sentQuestion.game_question_id // Use the Not condition to exclude the specified IDs
-                                        },
-                                    })
-                                await temp.pop(question)
+                            let temp2 =[]
+                            // console.log(fetched[0].game_question_id)
+                            counter = fetched.length
+                            console.log('temp before is : ', temp)
 
-                            })
-                            console.log(gameQuestions)
+                            while(counter !== 0) {
+
+                                const questions = await questionRepository.find({
+                                    where: {
+                                        id: fetched[counter-1].game_question_id // Use the Not condition to exclude the specified IDs
+                                    },
+                                })
+                            console.log(questions[0])
+                            const index = temp.findIndex((question) => question.id === questions[0].id);
+                            console.log(index);
+
+                            if (index > -1) {
+                                temp.splice(index, 1); // Remove the question at the found index
+                            }
+                                counter --
+                            }
+                            console.log('temp is ',temp )
+
+
+                            // await fetched.forEach(async (sentQuestion) =>{
+                            //         const question = await questionRepository.find({
+                            //             where: {
+                            //                 id: sentQuestion.game_question_id // Use the Not condition to exclude the specified IDs
+                            //             },
+                            //         }).then((q) => {
+                            //             temp.pop(q)
+                            //         })
+                            //     .then(console.log(temp))
+                                // console.log(question)
+                                // await
+                            // })
+
                                 // counter --
                             // }
 
@@ -216,7 +236,7 @@ function createSocketConnection(server, token) {
 
 
                 }catch (error) {
-                console.log(`getgamequestionenewer error is  : ${error}`)
+                console.log(`error is  : ${error}`)
             // }
             }
         })
