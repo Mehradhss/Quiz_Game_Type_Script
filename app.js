@@ -20,7 +20,7 @@ app.use(express.urlencoded({extended: false}))
 app.use(authRoute)
 
 app.all('*', (req, res) => {
-    res.send('URL not found')
+    res.status(404).send('URL not found')
 })
 
 

@@ -17,16 +17,6 @@ module.exports = {
         }
     },
     relations: {
-        // game_questions: {
-        //     target: "game_question",
-        //     type: "one-to-many",
-        //     // joinTable: true,
-        //     // inverseSide: 'questions',
-        //     joinColumn: {
-        //         name: 'id',
-        //         referencedColumnName: 'question_id'
-        //     }
-        // },
         answers: {
             target: "answer",
             type: "one-to-many",
@@ -53,14 +43,5 @@ module.exports = {
             type : 'many-to-many',
             inverseSide: 'questions'
         } ,
-        game_answer : {
-            target: 'game_answer',
-            type: 'many-to-many',
-            inverseSide :'questions',
-            // joinColumn:{
-            //     name: 'id' ,
-            //     referencedColumnName : 'game_question_id'
-            // }
-        }
     }
 }

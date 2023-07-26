@@ -1,13 +1,13 @@
 const express = require('express')
 const router = express.Router()
 const jwt = require('jsonwebtoken')
-const {registerUser} = require('../controllers/User-Registration')
 const {login} = require('../controllers/User-Login')
 const {testingGame} = require('../controllers/test')
 const {createSocketConnection: createSocketConnection} = require('../controllers/Connection')
 const {getIo: getIo} = require('../controllers/Connection')
 const {server} = require('../server')
 const {createGame} = require('../controllers/GameCreation')
+const {RegistrationController} = require("../controllers/v1/user/registration.controller");
 
 router.route('/api/v1/verify').get((req, res) => {
     const accessToken = req.headers['authorization'].split('Bearer ')[1];
@@ -29,15 +29,7 @@ router.route('/test/sc').get((req, res, next) => {
         console.log(error)
     }
 })
-router.route('/api/v1/user/registration').post( (req, res, next) => {
-    let body = {...req.body}
-    console.log(body.username, body.password)
-    try {
-        registerUser(req, res, body.username, body.password)
-    } catch (error) {
-        next(error)
-    }
-})
+router.post('/api/v1/user/registration', RegistrationController.register_user)
 
 router.route('/api/v1/user/login').post((req, res, next) => {
     let body = {...req.body}
