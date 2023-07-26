@@ -7,7 +7,7 @@ const {findGame} = require('../controllers/FindGame')
 const redis = require('../redis-config')
 const {dataSource} = require('../../dbconfig/data-source')
 const {startGame} = require('./GameJoin')
-const {getQuestion} = require('./FetchQuestion')
+const {getGameQuestion} = require('./FetchQuestion')
 const {gameInit} = require('./GameFirstInit')
 const {getGameQuestions} = require('./GameQuestions')
 const typeORM = require("typeorm");
@@ -102,23 +102,11 @@ function createSocketConnection(server, token) {
                             // const categoryid = data.categoryId
                             // const gameQuestions = await getGameQuestions(game_id, categoryid)
                             const gameQuestions = await getGameQuestions(1, 1)
-
                             console.log(gameQuestions)
-                            temp = gameQuestions
-                            // gameInit(game_id, gameStatus.IN_GAME)
-                            // socket.emit('showQuestion', {message : gameQuestions})
                             socket.on('fetchQuestion', async (data) => {
                                 try {
-                                    // await redis.get(roomId, async (err, game_id) => {
-                                    //     if (err) {
-                                    //         console.log('Error fetching data from Redis:', err)
-                                    //     } else if (game_id) {
-                                    // const gameQuestions = await getGameQuestions(1, 1)
-
-                                    // temp = gameQuestions
-                                    console.log(temp)
-                                    fetchedQuestion = await getQuestion(1 , temp )
-                                    await temp.pop(fetchedQuestion)
+                                    fetchedQuestion = await getGameQuestion(1)
+                                    // await temp.pop(fetchedQuestion)
                                     console.log(fetchedQuestion)
                                     // fetchedQuestion.answers.forEach(async (answer) => {
                                     //     if (answer.is_correct === true) {
@@ -173,38 +161,27 @@ function createSocketConnection(server, token) {
                 const gameRepository = await dataSource.getRepository('game')
                 const game_AnswerRepository = await dataSource.getRepository('game_answer')
                 const questionRepository = await dataSource.getRepository('question')
-                let availableQuestions
                     const fetchedQuestion = await game_AnswerRepository
                     .createQueryBuilder('game_answer')
                     .select('game_answer.game_question_id')
                     .leftJoin('game_answer.games', 'game')
                         .where('game_answer.game_id = :GameId',  { GameId: 1 })
-                        // .innerJoinAndSelect('game_answer.questions' , 'question' , 'game_answer.questions.id')
-                        // .where('game_answer.game_question_id = 8')
-                        // .innerJoin('game_answer')
-                    //     .from('game_answer')
-
-                    // .andWhere('question.id = :questionId', { questionId })
                     .getMany().then(async (fetched) =>{
                         console.log(fetched)
                             let gameQuestions = await questionRepository.find()
                             let temp = gameQuestions
                             let temp2 =[]
-                            // console.log(fetched[0].game_question_id)
                             counter = fetched.length
                             console.log('temp before is : ', temp)
-
                             while(counter !== 0) {
 
                                 const questions = await questionRepository.find({
                                     where: {
-                                        id: fetched[counter-1].game_question_id // Use the Not condition to exclude the specified IDs
+                                        id: fetched[counter-1].game_question_id
                                     },
                                 })
                             console.log(questions[0])
                             const index = temp.findIndex((question) => question.id === questions[0].id);
-                            console.log(index);
-
                             if (index > -1) {
                                 temp.splice(index, 1); // Remove the question at the found index
                             }
@@ -212,32 +189,9 @@ function createSocketConnection(server, token) {
                             }
                             console.log('temp is ',temp )
 
-
-                            // await fetched.forEach(async (sentQuestion) =>{
-                            //         const question = await questionRepository.find({
-                            //             where: {
-                            //                 id: sentQuestion.game_question_id // Use the Not condition to exclude the specified IDs
-                            //             },
-                            //         }).then((q) => {
-                            //             temp.pop(q)
-                            //         })
-                            //     .then(console.log(temp))
-                                // console.log(question)
-                                // await
-                            // })
-
-                                // counter --
-                            // }
-
-
-
                         })
-                // console.log(availableQuestions)
-
-
                 }catch (error) {
                 console.log(`error is  : ${error}`)
-            // }
             }
         })
 
