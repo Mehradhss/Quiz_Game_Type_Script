@@ -37,17 +37,17 @@ module.exports = {
         }
     },
     relations: {
-        game_questions: {
-            target: "game_question",
-            type: "one-to-many",
-            // joinTable: true,
-            // eager: true,
-            inverseSide: 'game',
-            joinColumn: {
-                name: 'id',
-                referencedColumnName: 'game_id'
-            }
-        },
+        // game_questions: {
+        //     target: "game_question",
+        //     type: "one-to-many",
+        //     // joinTable: true,
+        //     // eager: true,
+        //     inverseSide: 'game',
+        //     joinColumn: {
+        //         name: 'id',
+        //         referencedColumnName: 'game_id'
+        //     }
+        // },
         players : {
             target: 'user',
             type: 'many-to-many',

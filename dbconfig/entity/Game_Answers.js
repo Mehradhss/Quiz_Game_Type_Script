@@ -20,9 +20,10 @@ module.exports = {
             type: "int"
         },
         player_id: {
-            unique: true,
+            nullable: true,
+            // unique: true,
             type: "int",
-            nullable: true
+
         }
     },
     relations: {
@@ -55,14 +56,16 @@ module.exports = {
                 referencedColumnName: 'id'
             }
         },
-        question: {
+        questions: {
             target: 'question',
-            // type:"one-to-many",
-            inverseSide: 'game_answer',
-            joinColumn: {
-                name: 'game_question_id',
-                referencedColumnName: 'id'
-            }
+            type:"many-to-many",
+            inverseSide: 'game_answers',
+            cascade: true,
+            joinTable : true
+            // joinColumn: {
+            //     name: 'game_question_id',
+            //     referencedColumnName: 'id'
+            // }
         }
     }
 };

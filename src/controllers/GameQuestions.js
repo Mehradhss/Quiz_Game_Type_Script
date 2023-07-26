@@ -1,16 +1,14 @@
 const {dataSource} = require('../../dbconfig/data-source')
-const {game_question} = require('../../dbconfig/entity/Game_Question')
-
 async function shuffle(array) {
     let currentIndex = array.length;
     let randomIndex;
 
     while (currentIndex !== 0) {
-        randomIndex = Math.floor(Math.random() * currentIndex);
-        currentIndex--;
-        [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+        randomIndex = Math.floor(Math.random() * currentIndex)
+        currentIndex--
+        [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]]
     }
-    return array;
+    return array
 }
 
 async function getGameQuestions(game_id, category_id) {

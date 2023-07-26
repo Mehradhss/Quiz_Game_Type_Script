@@ -10,6 +10,7 @@ const {startGame} = require('./GameJoin')
 const {getQuestion} = require('./FetchQuestion')
 const {gameInit} = require('./GameFirstInit')
 const {getGameQuestions} = require('./GameQuestions')
+const typeORM = require("typeorm");
 
 const gameStatus = Object.freeze({
     PENDING: 'PENDING',
@@ -171,19 +172,47 @@ function createSocketConnection(server, token) {
             try{
                 const gameRepository = await dataSource.getRepository('game')
                 const game_AnswerRepository = await dataSource.getRepository('game_answer')
-
+                const questionRepository = await dataSource.getRepository('question')
+                let availableQuestions
                     const fetchedQuestion = await game_AnswerRepository
                     .createQueryBuilder('game_answer')
-                    // .select('')
-                    .leftJoinAndSelect('game_answer.games', 'game')
+                    .select('game_answer.game_question_id')
+                    .leftJoin('game_answer.games', 'game')
+                        .where('game_answer.game_id = :GameId',  { GameId: 1 })
+                        // .innerJoinAndSelect('game_answer.questions' , 'question' , 'game_answer.questions.id')
+                        // .where('game_answer.game_question_id = 8')
                         // .innerJoin('game_answer')
                     //     .from('game_answer')
-                    .where('game_answer.game_id = :GameId',  { GameId: 1 })
+
                     // .andWhere('question.id = :questionId', { questionId })
-                    .getMany();
-                console.log(fetchedQuestion)
+                    .getMany().then(async (fetched) =>{
+                        console.log(fetched)
+                            counter = fetched.length
+                            // while(counter !== 0) {
+                            //     const questions = await questionRepository.find({
+                            //         where: {
+                            //             id: typeORM.Not(9), // Use the Not condition to exclude the specified IDs
+                            //         },
+                            //     })
+                            let gameQuestions = await questionRepository.find()
+                            let temp = gameQuestions
+                            fetched.forEach(async (sentQuestion) =>{
+                                    const question = await questionRepository.find({
+                                        where: {
+                                            id: sentQuestion.game_question_id // Use the Not condition to exclude the specified IDs
+                                        },
+                                    })
+                                await temp.pop(question)
+
+                            })
+                            console.log(gameQuestions)
+                                // counter --
+                            // }
 
 
+
+                        })
+                // console.log(availableQuestions)
 
 
                 }catch (error) {
