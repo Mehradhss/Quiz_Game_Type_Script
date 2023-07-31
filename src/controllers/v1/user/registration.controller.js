@@ -1,13 +1,13 @@
-const register = require("../../../services/user/registration.service");
-const createToken = require("../../../services/token/token.service");
-const asyncHandler = require("express-async-handler");
+const register = require("../../../services/user/registration.service")
+const createToken = require("../../../services/token/token.service")
+const asyncHandler = require("express-async-handler")
 
 exports.register_user = asyncHandler(async (req, res) => {
     //validate user input
 
     const body = {...req.body}
     try {
-        const user = await register(body)
+        const user = await register(body.username,body.password)
         const token = await createToken(user)
         const response = {
             username: user.username,

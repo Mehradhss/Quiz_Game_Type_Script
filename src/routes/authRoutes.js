@@ -7,7 +7,7 @@ const {createSocketConnection: createSocketConnection} = require('../controllers
 const {getIo: getIo} = require('../controllers/Connection')
 const {server} = require('../server')
 const {createGame} = require('../controllers/GameCreation')
-const {RegistrationController} = require("../controllers/v1/user/registration.controller");
+const RegistrationController = require("../controllers/v1/user/registration.controller");
 
 router.route('/api/v1/verify').get((req, res) => {
     const accessToken = req.headers['authorization'].split('Bearer ')[1];

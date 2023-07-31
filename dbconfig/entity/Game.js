@@ -81,6 +81,17 @@ module.exports = {
                 name: 'id',
                 referencedColumnName: 'game_id'
             }
-        }
+        },
+        game_points : {
+            target : 'game_point',
+            type : 'one-to-many',
+            inverseSide : 'game' ,
+            cascade : true,
+            eager : true ,
+            joinColumn : {
+                name: 'id',
+                referencedColumnName : 'game_id'
+            }
+        },
     }
 }

@@ -20,8 +20,8 @@ const dataSource = new typeORM.DataSource({
         new entitySchema(require("./entity/Answer")),
         new entitySchema(require("./entity/Category")),
         new entitySchema(require("./entity/Question")),
-        new entitySchema(require("./entity/Game_Answers"))
-        // new entitySchema(require("./entity/Game_Question"))
+        new entitySchema(require("./entity/Game_Answers")),
+        new entitySchema(require("./entity/User_Game_Points"))
     ]
 })
 

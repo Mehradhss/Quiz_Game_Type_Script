@@ -32,7 +32,15 @@ module.exports = {
             // }
             cascade: true,
             joinTable: true
-        }
+        },
+        game_points : {
+            target : 'game_point',
+            type : 'many-to-many',
+            inverseSide : 'users' ,
+            eager : true ,
+            cascade : true
+        },
+
         // game_guest: {
         //     target: "game",
         //     type: "one-to-one",
