@@ -3,7 +3,6 @@ const asyncHandler = require("express-async-handler")
 
 exports.submitAnswer = asyncHandler(async (game_id, game_question_id, answer_id, user_id) => {
     try {
-        let points = 0
         const questionRepository = await dataSource.getRepository("question")
         const gamePointsRepository = await dataSource.getRepository('game_point')
         const userGamePoint = await gamePointsRepository.findOneOrFail({
@@ -25,7 +24,6 @@ exports.submitAnswer = asyncHandler(async (game_id, game_question_id, answer_id,
             const foundAnswer = await foundQuestion.answers.find(answer => answer.id === answer_id)
             foundGameAnswer.received_answer_id = answer_id
             await gameAnswerRepository.save(foundGameAnswer)
-            // const test = JSON.stringify(foundAnswer)
             console.log(`found answer is ${foundAnswer.is_correct}`)
             if (foundAnswer.is_correct) {
                 userGamePoint.points += 10

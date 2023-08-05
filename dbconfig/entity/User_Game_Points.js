@@ -3,7 +3,7 @@ module.exports = {
     columns: {
         id: {
             primary: true,
-            type: "int",
+            type: 'int',
             generated: true,
             nullable: false
         },
@@ -12,15 +12,17 @@ module.exports = {
             unique: false
         },
         user_id: {
-            type: "int",
-            unique: 'true'
+            type: 'int',
+            unique: false
         },
         points: {
             nullable: true,
-            type: "int"
+            type: 'int'
         },
-
-
+        is_finished:{
+            nullable: true,
+            type: 'bit'
+        }
     },
     relations : {
         users : {

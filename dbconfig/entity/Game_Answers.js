@@ -13,7 +13,7 @@ module.exports = {
         } ,
         game_question_id: {
             type: "int",
-            unique: 'true'
+            unique: false
         },
         received_answer_id: {
             nullable: true,

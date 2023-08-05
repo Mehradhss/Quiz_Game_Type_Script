@@ -3,8 +3,7 @@
   "version": "1.0.0",
   "main": "main.js",
   "scripts": {
-    "sys": "nodemon app.js",
-    "start": "ts-node src/index.ts",
+    "start": "nodemon app.js",
     "stnt": "nodemon src/index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "typeorm": "typeorm-ts-node-commonjs"

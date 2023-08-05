@@ -12,6 +12,8 @@ const {gameInit} = require('./GameFirstInit')
 const {getGameQuestions} = require('./GameQuestions')
 const typeORM = require("typeorm");
 const {submitAnswer} = require("./SubmitAnswer")
+const {gameFinal} = require('./game.finalization')
+
 const gameStatus = Object.freeze({
     PENDING: 'PENDING',
     STARTING: 'STARTING',
@@ -22,7 +24,7 @@ const gameStatus = Object.freeze({
 
 let io
 
-function createSocketConnection(server, token) {
+function createSocketConnection(server) {
     io = socketIO(server)
     io.on('connection', (socket) => {
         const accessToken = socket.handshake.headers.authorization.split('Bearer ')[1]
@@ -36,10 +38,10 @@ function createSocketConnection(server, token) {
                 console.log(socket.id)
                 socket.join(roomId)
                 let Game = await createGame(socket.id, gameStatus.PENDING)//.then(console.log('repo connected !')).then(findGame(socket.id))
-                const game_id = Game.id
+                const gameId = Game.id
                 console.log('roomid is : ', roomId)
-                console.log('gameid is : ', game_id)
-                redis.set(roomId, game_id, (err, result) => {
+                console.log('gameid is : ', gameId)
+                redis.set(roomId, gameId,'EX' , 86400, (err, result) => {
                     if (err) {
                         console.error('Error saving data to Redis:', err);
                     } else {
@@ -53,7 +55,7 @@ function createSocketConnection(server, token) {
             }
         })
         socket.on('joinGame', (data) => {
-            const roomId = socket.handshake.headers.roomId
+            const roomId = socket.handshake.headers.roomid
             console.log(roomId)
             // console.log(gameid)
             // foundGame = findGame(gameid)
@@ -61,20 +63,20 @@ function createSocketConnection(server, token) {
             const room = io.sockets.adapter.rooms.get(roomId)
 
             if (room && room.size <= 2) {
-                redis.get(roomId, (err, game_id) => {
+                redis.get(roomId, (err, gameId) => {
                     if (err) {
                         console.log('Error fetching data from Redis:', err)
-                    } else if (game_id) {
+                    } else if (gameId) {
                         if (room && room.size < 2) {
                             socket.join(roomId)
                             socket.emit('gameJoined', {roomId: roomId});
-                            startGame(game_id, socket.id, gameStatus.STARTING)
+                            startGame(gameId, socket.id, gameStatus.STARTING)
                             console.log('User joined game with room ID:', roomId);
                         } else {
                             console.log("room is not joinable!")
                             socket.emit('gameJoinError', {message: 'Unable to join the game. Room is full or does not exist.'});
                         }
-                        // console.log(`Game ID for Room ID ${roomId}: ${game_id}`)
+                        // console.log(`Game ID for Room ID ${roomId}: ${gameId}`)
                     } else {
                         console.log('Game ID not found for the given Room ID')
                     }
@@ -90,36 +92,66 @@ function createSocketConnection(server, token) {
             }
         })
         socket.on('readyToStart', async (data) => {
-            const roomId = socket.handshake.headers.roomId
+            const roomId = socket.handshake.headers.roomid
+            console.log(roomId)
             try {
-                await redis.get(roomId, async (err, game_id) => {
+                await redis.get(roomId, async (err, gameId) => {
                     if (err) {
                         console.log('Error fetching data from Redis:', err)
-                    } else if (game_id) {
+                    } else if (gameId) {
+                        console.log(gameId)
                         socket.emit('gameStarted', {roomId: roomId});
                         const category_id = data.categoryId
-                        const gameQuestions = await getGameQuestions(game_id, category_id).then(gameInit(game_id, gameStatus.IN_GAME, socket.id))
-                        console.log(gameQuestions)
-                        socket.on('fetchQuestion', async (data) => {
-                            fetchedQuestion = await getGameQuestion(1)
-                            console.log(fetchedQuestion)
-                            socket.on('submitAnswer', async (data) => {
-                                await submitAnswer(1, fetchedQuestion.id, data.answer_id, socket.id).then()
-                            })
-                        })
+                        const gameQuestions = await getGameQuestions(gameId, category_id)
+
+                        // console.log(gameQuestions)
                     }
                 })
             } catch (err) {
                 console.log(`fetch question error is :${err}`)
             }
         })
+        socket.on('started' , async (data) => {
+            const roomId = socket.handshake.headers.roomid
+            await redis.get(roomId, async (err, gameId) => {
+                if (err) {
+                    console.log('Error fetching data from Redis:', err)
+                } else if (gameId) {
+                    await  gameInit(gameId, gameStatus.IN_GAME, socket.id)
+                    socket.on('fetchQuestion', async (data) => {
+                        try {
+
+                            // console.log('gameid is ' , gameId)
+                            fetchedQuestion = await getGameQuestion(gameId , socket.id)
+                            console.log('ey baba ', fetchedQuestion)
+                            if (!fetchedQuestion) {
+                                console.log('User game finished !')
+                                gameFinal(gameId, gameStatus.FINISHED)
+                                socket.emit('userGameFinished', {message: 'game finished'})
+
+                            } else {
+                                console.log(fetchedQuestion)
+                                socket.on('submitAnswer', async (data) => {
+                                    await submitAnswer(gameId, fetchedQuestion.id, data.answer_id, socket.id).then()
+                                })
+                            }
+
+                        }catch (error){
+                            console.log(`fetch question error is ${error}`)
+                        }
+                    })
+                }
+            })
+        })
+
+
 
         // socket.on('fetchQuestion', async (data) => {
         //     try {
-        //         // await redis.get(roomId, async (err, game_id) => {
+        //         // await redis.get(roomId, async (err, gameId) => {
         //         //     if (err) {
         //         //         console.log('Error fetching data from Redis:', err)
-        //         //     } else if (game_id) {
+        //         //     } else if (gameId) {
         //         let temp
         //         // const gameQuestions = await getGameQuestions(1, 1)
         //
