@@ -1,13 +1,8 @@
 const express = require('express')
 const router = express.Router()
 const jwt = require('jsonwebtoken')
-const {login} = require('../controllers/User-Login')
-const {testingGame} = require('../controllers/test')
-const {createSocketConnection: createSocketConnection} = require('../controllers/Connection')
-const {getIo: getIo} = require('../controllers/Connection')
-const {server} = require('../server')
-const {createGame} = require('../controllers/GameCreation')
-const RegistrationController = require("../controllers/v1/user/registration.controller");
+const registrationController = require("../controllers/v1/user/registration.controller")
+const loginController = require('../controllers/v1/user/login.controller')
 
 router.route('/api/v1/verify').get((req, res) => {
     const accessToken = req.headers['authorization'].split('Bearer ')[1];
@@ -22,34 +17,11 @@ router.route('/api/v1/verify').get((req, res) => {
         })
     })
 })
-router.route('/test/sc').get((req, res, next) => {
-    try {
-        createGame()
-    } catch (error) {
-        console.log(error)
-    }
-})
-router.post('/api/v1/user/registration', RegistrationController.register_user)
+router.post('/api/v1/user/registration', registrationController.register_user)
 
-router.route('/api/v1/user/login').post((req, res, next) => {
-    let body = {...req.body}
-    try {
-        login(req, res, body.username, body.password)
-    } catch (error) {
-        res.status(408).send()
-        console.log(error)
-    }
-})
-router.route("/test").get((req, res,) => {
-    try {
-        testingGame()
-        res.status(201).json({
-            "tested": true
-        })
-    } catch (err) {
-        res.status(400).send()
-        console.log(error)
-    }
-})
+
+router.post('/api/v1/user/login', loginController.login_user)
+
+
 
 module.exports = router

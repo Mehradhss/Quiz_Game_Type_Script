@@ -1,16 +1,12 @@
-const {server} = require('../server')
 const socketIO = require('socket.io')
-const {generateRoomId: generateRoomId} = require('../controllers/RoomCreation')
-const {verify} = require('../controllers/TokenVerification')
-const {createGame} = require('../controllers/GameCreation')
-const {findGame} = require('../controllers/FindGame')
-const redis = require('../redis-config')
-const {dataSource} = require('../../dbconfig/data-source')
+const {generateRoomId: generateRoomId} = require('./RoomCreation')
+const {verify} = require('./TokenVerification')
+const {createGame} = require('./GameCreation')
+const redis = require('../../../redis-config')
 const {startGame} = require('./GameJoin')
 const {getGameQuestion} = require('./FetchQuestion')
 const {gameInit} = require('./GameFirstInit')
 const {getGameQuestions} = require('./GameQuestions')
-const typeORM = require("typeorm");
 const {submitAnswer} = require("./SubmitAnswer")
 const {gameFinal} = require('./game.finalization')
 
@@ -22,17 +18,17 @@ const gameStatus = Object.freeze({
     FINISHED: 'FINISHED'
 });
 
-let io
+
 
 function createSocketConnection(server) {
-    io = socketIO(server)
+    const io = socketIO(server)
     io.on('connection', (socket) => {
         const accessToken = socket.handshake.headers.authorization.split('Bearer ')[1]
         const user = verify(accessToken)
         socket.id = user.id
         const clientId = socket.id
         console.log(`A user connected with ID: ${clientId}`);
-        socket.on('createGame', async (data) => {
+        socket.on('createGame', async () => {
             const roomId = generateRoomId()
             try {
                 console.log(socket.id)
@@ -41,7 +37,7 @@ function createSocketConnection(server) {
                 const gameId = Game.id
                 console.log('roomid is : ', roomId)
                 console.log('gameid is : ', gameId)
-                redis.set(roomId, gameId,'EX' , 86400, (err, result) => {
+                redis.set(roomId, gameId,'EX' , 86400, (err) => {
                     if (err) {
                         console.error('Error saving data to Redis:', err);
                     } else {
@@ -54,7 +50,7 @@ function createSocketConnection(server) {
                 console.log(`Game Creation error is ${error}`)
             }
         })
-        socket.on('joinGame', (data) => {
+        socket.on('joinGame', () => {
             const roomId = socket.handshake.headers.roomid
             console.log(roomId)
             // console.log(gameid)
@@ -99,10 +95,10 @@ function createSocketConnection(server) {
                     if (err) {
                         console.log('Error fetching data from Redis:', err)
                     } else if (gameId) {
-                        console.log(gameId)
-                        socket.emit('gameStarted', {roomId: roomId});
                         const category_id = data.categoryId
                         const gameQuestions = await getGameQuestions(gameId, category_id)
+                        console.log(gameId)
+                        socket.emit('gameStarted', {roomId: roomId});
 
                         // console.log(gameQuestions)
                     }

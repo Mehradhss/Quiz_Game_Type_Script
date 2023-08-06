@@ -1,5 +1,5 @@
 // Function to get a random question ID from a specific category
-const {dataSource} = require('../../dbconfig/data-source')
+const {dataSource} = require('../../../../dbconfig/data-source')
 
 let foundQuestion
 

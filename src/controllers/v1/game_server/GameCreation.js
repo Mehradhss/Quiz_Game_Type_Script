@@ -1,4 +1,4 @@
-const {dataSource} = require('../../dbconfig/data-source')
+const {dataSource} = require('../../../../dbconfig/data-source')
 
 let foundGame
 

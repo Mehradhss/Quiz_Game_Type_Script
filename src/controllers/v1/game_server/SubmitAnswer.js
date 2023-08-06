@@ -1,4 +1,4 @@
-const {dataSource} = require('../../dbconfig/data-source')
+const {dataSource} = require('../../../../dbconfig/data-source')
 const asyncHandler = require("express-async-handler")
 
 exports.submitAnswer = asyncHandler(async (game_id, game_question_id, answer_id, user_id) => {
