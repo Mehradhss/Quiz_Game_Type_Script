@@ -12,4 +12,5 @@ RUN npm install
 
 COPY . .
 
-CMD ["npm start", "app.js"]
+EXPOSE 3000
+CMD ["node", "app.js"]
