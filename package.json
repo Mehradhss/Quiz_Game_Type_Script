@@ -1,11 +1,9 @@
 {
   "name": "quizlike_game",
   "version": "1.0.0",
-  "description": "",
   "main": "main.js",
   "scripts": {
-    "sys": "nodemon app.js",
-    "start": "ts-node src/index.ts",
+    "start": "nodemon app.js",
     "stnt": "nodemon src/index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "typeorm": "typeorm-ts-node-commonjs"
@@ -22,10 +20,22 @@
   "dependencies": {
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
+    "express-async-handler": "^1.2.0",
+    "ioredis": "^5.3.2",
     "jsonwebtoken": "^9.0.1",
     "mssql": "^9.1.1",
     "pg": "^8.4.0",
     "reflect-metadata": "^0.1.13",
+    "socket.io": "^4.7.1",
     "typeorm": "0.3.17"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Mehradhss/Quiz_Like_Game.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Mehradhss/Quiz_Like_Game/issues"
+  },
+  "homepage": "https://github.com/Mehradhss/Quiz_Like_Game#readme",
+  "description": ""
 }

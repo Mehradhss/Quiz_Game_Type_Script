@@ -1,7 +1,8 @@
 const express = require('express')
-const app = express()
 const authRoute = require('./src/routes/authRoutes')
-const jwt = require('jsonwebtoken')
+const {app : app} = require('./src/server')
+const {server:server} = require('./src/server')
+const {createSocketConnection: createSocketConnection} = require('./src/controllers/v1/game_server/Connection')
 
 
 app.use(express.json())
@@ -16,11 +17,11 @@ app.use(express.urlencoded({extended: false}))
 app.use(authRoute)
 
 app.all('*', (req, res) => {
-    res.send('URL not found')
+    res.status(404).send('URL not found')
 })
 
 
-app.listen(3000, '0.0.0.0', () => {
-
-    console.log("server is listening on port 3000 ...")
+server.listen(3000, '0.0.0.0', () => {
+    console.log("app is listening on port 3000 ...")
+    createSocketConnection(server)
 })

@@ -4,7 +4,8 @@ module.exports = {
         id: {
             primary: true,
             type: "int",
-            generated: true
+            generated: true,
+            nullable: false
         },
         username: {
             unique: true,
@@ -12,7 +13,44 @@ module.exports = {
         },
         password: {
             type: "varchar"
+        },
+        points: {
+            type: "int",
+            nullable: true
         }
     },
-    relations: {}
+    relations: {
+        games: {
+            target: "game",
+            type: "many-to-many",
+            // joinTable: true,
+            // eager: true,
+            inverseSide: 'players',
+            // joinColumn: {
+            //     name: 'id',
+            //     referencedColumnName: 'host_id'
+            // }
+            cascade: true,
+            joinTable: true
+        },
+        game_points : {
+            target : 'game_point',
+            type : 'many-to-many',
+            inverseSide : 'users' ,
+            eager : true ,
+            cascade : true
+        },
+
+        // game_guest: {
+        //     target: "game",
+        //     type: "one-to-one",
+        //     // joinTable: true,
+        //     // eager: true,
+        //     inverseSide: 'guest',
+        //     joinColumn: {
+        //         name: 'id',
+        //         referencedColumnName: 'guest_id'
+        //     }
+        // }
+    }
 };
