@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  mssql:
+    container_name: sql-server
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    #image: mcr.microsoft.com/mssql/server:2019-CU11-ubuntu
+    restart: always
+    environment:
+      ACCEPT_EULA: Y
+      SA_PASSWORD: Mehrad876
+    ports:
+      - 1433:1433
+    volumes:
+      - ms-volume:/var/opt/mssql
+      
+  redis:
+    image: redis:6.2-alpine
+    # image: bitnami/redis:3.0
+    restart: always
+    ports:
+      - 6379:6379
+    command: redis-server
+    volumes: 
+      - redis:/data
+
+  quizlike:
+    container_name: quizlike
+    build: ./
+      # context: ./
+      # target: production
+    ports:
+      - 3000:3000
+    environment:
+      NODE_ENV: production
+      DB_HOST: mssql
+      DB_PORT: 1433
+      DB_USER: sa
+      DB_PASSWORD: Mehrad876
+      DB_NAME: quizlike
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      # REDIS_PASSWORD: eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
+      env_file: .env
+    depends_on:
+      - mssql
+      - redis
+    links:
+      - mssql
+      - redis
+
+
+volumes:
+  ms-volume:
+  redis:
+
+
+
