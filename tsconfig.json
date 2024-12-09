@@ -4,6 +4,7 @@
       "es5",
       "es6"
     ],
+    "esModuleInterop": true,
     "target": "es5",
     "module": "commonjs",
     "moduleResolution": "node",
@@ -11,5 +12,11 @@
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "sourceMap": true
-  }
+  },
+  "include": [
+    "src/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }
