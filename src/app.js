@@ -1,8 +1,8 @@
 const express = require('express')
-const authRoute = require('./src/routes/authRoutes')
-const {app : app} = require('./src/server')
-const {server:server} = require('./src/server')
-const {createSocketConnection: createSocketConnection} = require('./src/controllers/v1/game_server/Connection')
+const authRoute = require('./routes/authRoutes')
+const {app : app} = require('./server')
+const {server:server} = require('./server')
+const {createSocketConnection: createSocketConnection} = require('./controllers/v1/game_server/Connection')
 
 
 app.use(express.json())

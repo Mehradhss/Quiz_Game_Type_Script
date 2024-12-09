@@ -1,4 +1,4 @@
-const {dataSource} = require('../../../dbconfig/data-source')
+const {dataSource} = require('../../../database/data-source')
 
 module.exports = function register(username,password) {
     const userRepository = dataSource.getRepository("user")
