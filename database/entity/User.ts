@@ -1,5 +1,14 @@
-import {Entity, Column, PrimaryGeneratedColumn, ManyToOne, OneToMany, ManyToMany} from "typeorm"
-import {JoinTable} from "typeorm/browser";
+import {
+    Entity,
+    Column,
+    PrimaryGeneratedColumn,
+    ManyToOne,
+    OneToMany,
+    ManyToMany,
+    UpdateDateColumn,
+    CreateDateColumn,
+    JoinTable
+} from "typeorm"
 import {QuestionResult} from "./QuestionResult";
 import {Game} from "./Game";
 import {Question} from "./Question";
@@ -17,11 +26,17 @@ export class User {
     @Column({nullable: false})
     password: string
 
+    @CreateDateColumn({ type: "timestamp", default: () => "CURRENT_TIMESTAMP(6)" })
+    public created_at: Date;
+
+    @UpdateDateColumn({ type: "timestamp", default: () => "CURRENT_TIMESTAMP(6)", onUpdate: "CURRENT_TIMESTAMP(6)" })
+    public updated_at: Date;
+
     @Column()
-    total_points: bigint
+    total_points: number
 
     @ManyToMany((type) => Game, {onDelete: "CASCADE"})
-    @JoinTable({name: 'game_users', joinColumn: {name: 'id', referencedColumnName: 'user_id'}})
+    @JoinTable({name: 'game_users', joinColumn: {name: 'user_id', referencedColumnName: 'id'}})
     games: Game[]
 
     @OneToMany((type) => QuestionResult, (questionResult) => questionResult.user, {})

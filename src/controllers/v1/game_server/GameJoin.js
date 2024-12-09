@@ -1,4 +1,4 @@
-const {dataSource} = require("../../../../database/data-source");
+const {dataSource} = require("../../../../database/DataSource");
 async function startGame( id, guest_id ,status) {
     try {
         const gameRepository = await dataSource.getRepository("game")

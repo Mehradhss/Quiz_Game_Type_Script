@@ -15,8 +15,8 @@ const dbLogging = process.env.DB_LOGGING === "true";
 
 const dbPort = parseInt(process.env.DB_PORT)
 
-const dataSource = new DataSource({
-    type: dbDriver,
+export const dataSource = new DataSource({
+    type: "mysql",
     host: process.env.DB_HOST,
     port: dbPort,
     username: process.env.DB_USERNAME,
@@ -27,8 +27,8 @@ const dataSource = new DataSource({
     extra: {
         trustServerCertificate: true,
     },
-    entities: ["src/database/entity/*.ts"],
-    migrations: ["src/database/migrations/*.ts"]
+    entities: ["./database/entity/*.ts"],
+    migrations: ["./database/migrations/*.ts"]
 })
 
 dataSource.initialize().then(
@@ -38,6 +38,6 @@ dataSource.initialize().then(
 ).catch((err: any) => {
     console.log("Connection error is : ", err)
 })
-module.exports = {
-    dataSource
-}
+// module.exports = {
+//     dataSource
+// }

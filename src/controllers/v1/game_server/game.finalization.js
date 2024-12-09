@@ -1,4 +1,4 @@
-const {dataSource} = require("../../../../database/data-source");
+const {dataSource} = require("../../../../database/DataSource");
 const asyncHandler = require('express-async-handler')
 
 exports.gameFinal = asyncHandler(async function (id, status) {

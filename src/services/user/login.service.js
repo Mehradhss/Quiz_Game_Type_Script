@@ -1,4 +1,4 @@
-const {dataSource} = require('../../../database/data-source')
+const {dataSource} = require('../../../database/DataSource')
 const jwt = require('jsonwebtoken')
 const asyncHandler = require('express-async-handler')
 require('dotenv').config()

@@ -1,4 +1,4 @@
-import {Entity, Column, PrimaryGeneratedColumn, ManyToOne, OneToMany} from "typeorm"
+import {Entity, Column, PrimaryGeneratedColumn, ManyToOne, OneToMany, UpdateDateColumn, CreateDateColumn} from "typeorm"
 import {Question} from "./Question";
 import {Answer} from "./Answer";
 import {User} from "./User";
@@ -8,6 +8,12 @@ import {User} from "./User";
 export class QuestionResult {
     @PrimaryGeneratedColumn()
     id: number
+
+    @CreateDateColumn({ type: "timestamp", default: () => "CURRENT_TIMESTAMP(6)" })
+    public created_at: Date;
+
+    @UpdateDateColumn({ type: "timestamp", default: () => "CURRENT_TIMESTAMP(6)", onUpdate: "CURRENT_TIMESTAMP(6)" })
+    public updated_at: Date;
 
     @ManyToOne((type) => Question, (question) => question.questionResults)
     question: Question
