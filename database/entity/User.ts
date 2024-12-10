@@ -35,13 +35,13 @@ export class User {
     @Column()
     total_points: number
 
-    @ManyToMany((type) => Game, {onDelete: "CASCADE"})
+    @ManyToMany(() => Game, {cascade : true , onDelete: "CASCADE"})
     @JoinTable({name: 'game_users', joinColumn: {name: 'user_id', referencedColumnName: 'id'}})
     games: Game[]
 
-    @OneToMany((type) => QuestionResult, (questionResult) => questionResult.user, {})
+    @OneToMany(() => QuestionResult, (questionResult) => questionResult.user, {})
     questionResults: QuestionResult[]
 
-    @ManyToOne((type) => Leaderboard, (leaderBoard) => leaderBoard.users, {})
+    @ManyToOne(() => Leaderboard, (leaderBoard) => leaderBoard.users, {})
     leaderBoard: Leaderboard
 }
