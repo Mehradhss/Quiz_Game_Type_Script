@@ -1,9 +1,10 @@
+import asyncHandler from "express-async-handler";
+import {Request, Response} from "express";
 const {dataSource} = require('../../../database/DataSource')
 const jwt = require('jsonwebtoken')
-const asyncHandler = require('express-async-handler')
 require('dotenv').config()
 
-exports.userLoginService = asyncHandler (async (req, res, username, password) => {
+exports.userLoginService = asyncHandler (async (req : Request, res : Response, username : any, password : any) => {
     if (!(username && password)) {
         res.status(400).send();
     }

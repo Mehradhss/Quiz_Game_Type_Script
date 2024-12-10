@@ -1,4 +1,4 @@
-const {dataSource} = require("../../../../database/DataSource");
+const {dataSource} = require("../../../database/DataSource");
 
 async function gameInit(id, status, user_id) {
     try {

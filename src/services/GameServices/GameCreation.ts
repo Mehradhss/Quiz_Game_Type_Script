@@ -1,25 +1,23 @@
-const {dataSource} = require('../../../../database/DataSource')
+import {dataSource} from "../../../database/DataSource";
 
 let foundGame
 
-async function createGame( hostid ,status) {
+export default async function createGame(hostId, status) {
     try {
         const newGame = {
-            host_id: hostid,
+            host_id: hostId,
             status: status
         }
+
         const gameRepository = await dataSource.getRepository("game")
         await gameRepository
             .save(newGame).then((savedGame) => {
                 console.log(savedGame)
                 foundGame = savedGame
             })
+
         return foundGame
     } catch (err) {
         console.log(`creation err is ${err}`);
     }
-}
-
-module.exports = {
-    createGame
 }

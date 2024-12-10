@@ -16,7 +16,7 @@ const dbLogging = process.env.DB_LOGGING === "true";
 const dbPort = parseInt(process.env.DB_PORT)
 
 export const dataSource = new DataSource({
-    type: "mysql",
+    type: dbDriver,
     host: process.env.DB_HOST,
     port: dbPort,
     username: process.env.DB_USERNAME,
@@ -38,6 +38,3 @@ dataSource.initialize().then(
 ).catch((err: any) => {
     console.log("Connection error is : ", err)
 })
-// module.exports = {
-//     dataSource
-// }

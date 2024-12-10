@@ -1,4 +1,4 @@
-const {dataSource} = require('../../../../database/DataSource')
+const {dataSource} = require('../../../database/DataSource')
 require('dotenv').config()
 
 async function findGame(id) {

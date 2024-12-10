@@ -1,5 +1,5 @@
-const register = require("../../../services/user/registration.service")
-const createToken = require("../../../services/token/token.service")
+const register = require("../../../services/Auth/registration.service")
+const createToken = require("../../../services/Token/token.service")
 const asyncHandler = require("express-async-handler")
 
 exports.register_user = asyncHandler(async (req, res) => {

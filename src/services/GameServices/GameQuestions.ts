@@ -1,4 +1,4 @@
-const {dataSource} = require('../../../../database/DataSource')
+const {dataSource} = require('../../../database/DataSource')
 async function shuffle(array) {
     let currentIndex = array.length;
     let randomIndex;
