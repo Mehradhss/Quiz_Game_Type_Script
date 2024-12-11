@@ -15,7 +15,8 @@ export default async function register(username, password) {
                 resolve(user)
             }).catch(function (error) {
                 console.log("[Registration service] Error occurred" + error);
-                reject(error)
+
+                throw Error()
             })
 
     })

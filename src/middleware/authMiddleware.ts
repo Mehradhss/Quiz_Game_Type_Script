@@ -1,25 +1,25 @@
-import {Server, Socket} from 'socket.io'
+import {Socket} from 'socket.io'
 import {expressjwt} from 'express-jwt'
-import {NextFunction, Request} from 'express'
-import * as jwt from 'jsonwebtoken'
-import dotenv from 'dotenv'
+import {Request} from 'express'
+import {config} from 'dotenv'
 
-dotenv.config()
+config()
 
-const secretKey = process.env.TOKEN_SECRET ?? 'the_secret_key'
+const secretKey = process.env.ACCESS_TOKEN_SECRET ?? 'Access_Token_Secret'
 
 const authSocketMiddleware = (socket: Socket, next: (err?: Error) => void) => {
     const middleware = expressjwt({
         secret: secretKey,
         algorithms: ['HS256'],
         getToken: (req: Request) => {
-            return socket?.handshake?.headers?.authorization!.split('|')[0] ?? ''
+            return socket?.handshake?.headers?.authorization!.split('|')[1] ?? ''
         },
     })
     middleware(socket.request as Request, {} as any, (err) => {
         if (err) {
             return next(new Error(`Authentication error: ${err.message}`))
         }
+
         next()
     })
 }
