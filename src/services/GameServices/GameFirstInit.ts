@@ -1,14 +1,18 @@
-const {dataSource} = require("../../../database/DataSource");
+import {dataSource} from "../../../database/DataSource";
+import {getRedisClient} from "../../RedisConfig/RedisConfig";
 
 async function gameInit(id, status, user_id) {
     try {
+        const redisClient = await getRedisClient()
+
         const gameRepository = await dataSource.getRepository("game")
+
         const foundGame = await gameRepository.findOneOrFail({
             where: {
                 id
             }
         })
-        const gamePointRepository = await dataSource.getRepository("game_point")
+
         foundGame.status = status
         const newGamePoint = {
             game_id: id,

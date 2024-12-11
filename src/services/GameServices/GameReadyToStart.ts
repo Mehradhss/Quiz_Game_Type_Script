@@ -4,7 +4,7 @@ import {Game} from "../../../database/entity/Game";
 import {User} from "../../../database/entity/User";
 
 
-export const playerReadyToStart = asyncWrapper(async function (playerId: number, gameId: number) {
+export const playerReadyToStart = async function (playerId: number, gameId: number) {
     const gameRepository = await dataSource.getRepository(Game);
     const userRepository = await dataSource.getRepository(User);
 
@@ -25,4 +25,4 @@ export const playerReadyToStart = asyncWrapper(async function (playerId: number,
     await user?.games.push(game);
 
     await userRepository.save(user);
-});
+};

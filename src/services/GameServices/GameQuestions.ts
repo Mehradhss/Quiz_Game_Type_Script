@@ -1,4 +1,6 @@
-const {dataSource} = require('../../../database/DataSource')
+import {dataSource} from "../../../database/DataSource";
+import {getRedisClient} from "../../RedisConfig/RedisConfig";
+
 async function shuffle(array) {
     let currentIndex = array.length;
     let randomIndex;
@@ -11,9 +13,11 @@ async function shuffle(array) {
     return array
 }
 
-async function getGameQuestions(game_id, category_id) {
+export async function getGameQuestions(game_id, category_id) {
     const questionRepository = await dataSource.getRepository("question")
+
     const categoryQuestions = await questionRepository.find({where: {category_id}})
+
     const gameRepository = await dataSource.getRepository('game')
 
     if (categoryQuestions.length === 0) {
@@ -22,26 +26,24 @@ async function getGameQuestions(game_id, category_id) {
     }
 
     try {
-        foundGame = await gameRepository.findOneOrFail({where: {id: game_id}, relations: ['questions']})
+        const foundGame = await gameRepository.findOneOrFail({where: {id: game_id}, relations: ['questions']})
+
+        const shuffledQuestions = await shuffle(categoryQuestions)
+
+        const randomQuestions = await shuffledQuestions.slice(0, 6);
+
+        while (foundGame.questions.length > 0) {
+            foundGame.questions.pop()
+        }
+
+        await randomQuestions.forEach(async (question) => {
+            await foundGame.questions.push(question)
+        })
+
+        await gameRepository.save(foundGame)
+
+        return foundGame.questions
     } catch (error) {
         console.log(error)
     }
-
-    const shuffledQuestions = await shuffle(categoryQuestions)
-    const randomQuestions = await shuffledQuestions.slice(0, 6);
-    while (foundGame.questions.length > 0) {
-        foundGame.questions.pop()
-    }
-
-    await randomQuestions.forEach(async (question) => {
-        await foundGame.questions.push(question)
-    })
-    await gameRepository.save(foundGame)
-    // console.log(foundGame)
-    return foundGame.questions
-}
-
-
-module.exports = {
-    getGameQuestions
 }

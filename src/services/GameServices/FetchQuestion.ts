@@ -70,7 +70,6 @@ async function getGameQuestion(gameId, userId) {
         // }
     } catch (error) {
         // console.log(`fetch question error is : ${error}`)
-        console.log('resid be inja !')
         const gamePointRepository = await dataSource.getRepository('game_point')
         foundGamePoint = await gamePointRepository.findOneOrFail({where : {
                 game_id: gameId,

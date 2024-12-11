@@ -17,16 +17,7 @@ export class Game {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column({
-        enum: [
-            'PENDING',
-            'STARTING',
-            'IN_GAME',
-            'FINALIZING',
-            'FINISHED'
-        ],
-        nullable: false
-    })
+    @Column({nullable: false})
     status: string
 
     @CreateDateColumn({type: "timestamp", default: () => "CURRENT_TIMESTAMP(6)"})

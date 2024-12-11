@@ -1,20 +1,20 @@
 import generateRoomId from "../../services/GameServices/RoomCreation";
 import createGame from "../../services/GameServices/GameCreation";
-
-const {startGame} = require('./GameJoin')
+import {updateGame} from "../../services/GameServices/GameJoin";
+import {getGameQuestions} from "../../services/GameServices/GameQuestions";
+import {io} from "../../server/serverConfig";
 const {getGameQuestion} = require('./FetchQuestion')
 const {gameInit} = require('./GameFirstInit')
 const {getGameQuestions} = require('./GameQuestions')
 const {submitAnswer} = require("./SubmitAnswer")
-const {gameFinal} = require('./game.finalization')
-import {io} from "../../server/serverConfig"
 import asyncWrapper from "../../middleware/wrappers/asyncWrapper";
 import {getRedisClient} from "../../RedisConfig/RedisConfig";
 import {authSocketMiddleware} from "../../middleware/authMiddleware";
 import asyncHandler from "express-async-handler";
 import {Socket} from "socket.io";
-import socketAsync
 import socketWrapper from "../../middleware/wrappers/socketWrapper";
+import {playerReadyToStart} from "../../services/GameServices/GameReadyToStart";
+import {getVerifiedUserService} from "../../services/Auth/getVerifiedUser.service";
 
 const gameStatus = Object.freeze({
     PENDING: 'PENDING',
@@ -23,6 +23,11 @@ const gameStatus = Object.freeze({
     FINALIZING: 'FINALIZING',
     FINISHED: 'FINISHED'
 });
+
+type VerifiedUser = {
+    id : number
+}
+
 
 const v1UserRoute = io.of('/v1/user').use((socket, next) => {
     authSocketMiddleware(socket, next)
@@ -83,13 +88,12 @@ export const userSocketListeners = asyncWrapper(async (server) => {
 
                         socket.emit('gameJoin', {message: "game joined successfully with room id : " + roomId});
 
-                        await startGame(gameId, socket.id, gameStatus.STARTING).then('game')
+                        await updateGame(gameId, socket.id, gameStatus.STARTING).then('game')
 
                         console.log('User joined game with room ID:', roomId);
                     })
                 }
 
-                console.log("room is not joinable!")
                 socket.emit('gameJoinError', {error: {message: 'Unable to join the game. Room is full or does not exist.'}});
             })
 
@@ -100,22 +104,23 @@ export const userSocketListeners = asyncWrapper(async (server) => {
 
                     await redisClient.get(roomId, async (err, gameId) => {
                         if (err) {
-                            console.log('Error fetching data from Redis:', err)
+                            socket.emit('readyToStartError' , {error: {message : 'room not found'}});
                         } else if (gameId) {
-                            const category_id = data.categoryId
+                            const accessToken = socket.handshake.headers.authorization.split('Bearer ')[1]
+                            const verifiedUser : VerifiedUser = getVerifiedUserService(accessToken)
 
-                            const gameQuestions = await getGameQuestions(gameId, category_id)
+                            await playerReadyToStart(verifiedUser!.id , gameId)
 
                             socket.emit('gameStarted', {roomId: roomId});
                         }
                     })
                 } catch (err) {
-                    socket.emit('gameStartError', {error: {message: 'game failed to start' + err}})
+                    socket.emit('readyToStartError', {error: {message: 'game failed to start' + err}})
                 }
             })
             socket.on('started', async (data) => {
-                const roomId = socket.handshake.headers.roomid
-                await redis.get(roomId, async (err, gameId) => {
+                const roomId = data!.roomId ?? ''
+                await redisClient.get(roomId, async (err, gameId) => {
                     if (err) {
                         console.log('Error fetching data from Redis:', err)
                     } else if (gameId) {
@@ -123,20 +128,6 @@ export const userSocketListeners = asyncWrapper(async (server) => {
                         socket.on('fetchQuestion', async (data) => {
                             try {
 
-                                // console.log('gameid is ' , gameId)
-                                fetchedQuestion = await getGameQuestion(gameId, socket.id)
-                                console.log('ey baba ', fetchedQuestion)
-                                if (!fetchedQuestion) {
-                                    console.log('User game finished !')
-                                    gameFinal(gameId, gameStatus.FINISHED)
-                                    socket.emit('userGameFinished', {message: 'game finished'})
-
-                                } else {
-                                    console.log(fetchedQuestion)
-                                    socket.on('submitAnswer', async (data) => {
-                                        await submitAnswer(gameId, fetchedQuestion.id, data.answer_id, socket.id).then()
-                                    })
-                                }
 
                             } catch (error) {
                                 console.log(`fetch question error is ${error}`)

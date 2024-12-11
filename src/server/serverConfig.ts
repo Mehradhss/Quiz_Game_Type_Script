@@ -5,15 +5,19 @@ import express from "express"; // Import express
 import {router} from "../routes/authRoutes";
 
 const app = express(); // Create Express app
-
+app.use(express.json())
+app.use(express.urlencoded({extended: false}))
 app.use(cors({
     origin: "*",
     methods: "*",
     allowedHeaders: "*",
     credentials: false,
 }));
-
 app.use(router)
+app.all('*', (req, res) => {
+    res.status(404).send('URL not found')
+})
+
 const httpServer = http.createServer(app);
 
 const io = new Server(httpServer, {
