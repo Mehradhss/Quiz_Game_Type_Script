@@ -1,34 +1,28 @@
-import asyncHandler from "express-async-handler";
 import {Request, Response} from "express";
-const {dataSource} = require('../../../database/DataSource')
-const jwt = require('jsonwebtoken')
-require('dotenv').config()
+import createToken from "../Token/token.service";
+import {dataSource} from "../../../database/DataSource";
+import {config} from "dotenv";
 
-exports.userLoginService = asyncHandler (async (req : Request, res : Response, username : any, password : any) => {
+config()
+
+export default async function login(req: Request, res: Response, username: any, password: any) {
     if (!(username && password)) {
         res.status(400).send();
     }
-
-    console.log(username, password)
-    const userRepository = await dataSource.getRepository("user")
     try {
+        const userRepository = await dataSource.getRepository("user")
+
         const foundUser = await userRepository.findOneOrFail({
             where: {
                 username,
                 password
             }
         })
-        if (foundUser) {
-            const user = {id: foundUser.id}
-            const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET)
-            res.status(200).json({
-                    "token": accessToken
-                })
-        }
 
+        return createToken(foundUser);
     } catch (error) {
         res.status(401).send("username or password incorrect ! ")
         throw error
     }
-})
+}
 

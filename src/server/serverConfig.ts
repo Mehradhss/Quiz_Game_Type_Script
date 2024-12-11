@@ -2,6 +2,7 @@ import {Server, Socket} from 'socket.io'
 import cors from 'cors';
 import http from "http"; // Correct import for http
 import express from "express"; // Import express
+import {router} from "../routes/authRoutes";
 
 const app = express(); // Create Express app
 
@@ -12,6 +13,7 @@ app.use(cors({
     credentials: false,
 }));
 
+app.use(router)
 const httpServer = http.createServer(app);
 
 const io = new Server(httpServer, {
