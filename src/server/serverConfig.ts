@@ -33,7 +33,7 @@ const io = new Server(httpServer, {
         // whether to skip middlewares upon successful recovery
         skipMiddlewares: true,
     },
-    connectTimeout: 2 * 60 * 60 * 1000,
+    connectTimeout: 2 * 60 * 60,
     /* options */
 })
 
