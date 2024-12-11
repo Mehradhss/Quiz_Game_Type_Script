@@ -26,16 +26,16 @@ export class User {
     @Column({nullable: false})
     password: string
 
-    @CreateDateColumn({ type: "timestamp", default: () => "CURRENT_TIMESTAMP(6)" })
+    @CreateDateColumn({type: "timestamp", default: () => "CURRENT_TIMESTAMP(6)"})
     public created_at: Date;
 
-    @UpdateDateColumn({ type: "timestamp", default: () => "CURRENT_TIMESTAMP(6)", onUpdate: "CURRENT_TIMESTAMP(6)" })
+    @UpdateDateColumn({type: "timestamp", default: () => "CURRENT_TIMESTAMP(6)", onUpdate: "CURRENT_TIMESTAMP(6)"})
     public updated_at: Date;
 
-    @Column()
+    @Column({nullable: false, default: 0})
     total_points: number
 
-    @ManyToMany(() => Game, {cascade : true , onDelete: "CASCADE"})
+    @ManyToMany(() => Game, {cascade: true, onDelete: "CASCADE"})
     @JoinTable({name: 'game_users', joinColumn: {name: 'user_id', referencedColumnName: 'id'}})
     games: Game[]
 
