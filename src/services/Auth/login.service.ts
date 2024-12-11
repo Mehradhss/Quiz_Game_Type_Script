@@ -5,7 +5,7 @@ import {config} from "dotenv";
 
 config()
 
-export default async function login(req: Request, res: Response, username: any, password: any) {
+export default async function loginService(req: Request, res: Response, username: any, password: any) {
     if (!(username && password)) {
         res.status(400).send();
     }
