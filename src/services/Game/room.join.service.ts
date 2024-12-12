@@ -5,8 +5,8 @@ import {User} from "../../../database/entity/User";
 import {getSocketUser} from "../Redis/redis.get.user.service";
 
 
-export default async function joinRoom(socket : Socket , roomUuid) {
-    const gameRoomRepository  =  await dataSource.getRepository(GameRoom)
+export default async function joinRoom(socket: Socket, roomUuid) {
+    const gameRoomRepository = await dataSource.getRepository(GameRoom)
     const userRepository = await dataSource.getRepository(User)
 
     const gameRoom = await gameRoomRepository.findOneOrFail({
@@ -19,7 +19,7 @@ export default async function joinRoom(socket : Socket , roomUuid) {
 
     const user = await userRepository.findOneOrFail({
         where: {
-            id: userId
+            id: parseInt(userId)
         }
     }).then(user => {
         return user

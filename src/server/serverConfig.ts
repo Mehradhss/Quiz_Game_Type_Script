@@ -14,9 +14,9 @@ app.use(cors({
     allowedHeaders: "*",
     credentials: false,
 }));
+app.use(expressAuthMiddleware)
 app.use(router)
 
-app.use(expressAuthMiddleware)
 app.all('*', (req, res) => {
     res.status(404).send('URL not found')
 })

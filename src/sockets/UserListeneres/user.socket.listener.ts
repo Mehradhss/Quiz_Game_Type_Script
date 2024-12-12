@@ -114,7 +114,7 @@ export const userSocketListeners = asyncWrapper(async () => {
 
                 try {
                     const newGame = await createGame(roomId, socketId, gameStatus.PENDING)
-                } catch (e: Error) {
+                } catch (e) {
                     socket.emit('createGameError', {error: {message: `unable to create game : ${e.message}`}});
                 }
             })

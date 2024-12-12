@@ -12,7 +12,7 @@ export default async function createRoom(socketId) {
     newRoom.uuid = uuId
 
     const userId = await getSocketUser(socketId);
-    const foundUser = await userRepository.findOneOrFail({where: {id: userId}})
+    const foundUser = await userRepository.findOneOrFail({where: {id: parseInt(userId)}})
     foundUser.gameRooms.push(newRoom)
 
     await dataSource.manager.transaction(async (transactionalEntityManager) => {
