@@ -21,13 +21,12 @@ export default async function getGame(socketId, status) {
         })
 
     const gameQuery = await dataSource.getRepository(Game).createQueryBuilder('games')
+        .leftJoinAndSelect('games.gameRooms', 'gameRooms')
         .where('games.status = :status', {status})
 
     if (foundUserGameIds.length > 0) {
         gameQuery.andWhere("games.id NOT IN (:...ids)", {ids: foundUserGameIds});
     }
 
-    const foundGame = gameQuery.getOne()
-
-    return foundGame;
+    return gameQuery.getOne();
 }
