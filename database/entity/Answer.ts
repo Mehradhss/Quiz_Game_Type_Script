@@ -61,6 +61,6 @@ export class Answer {
     })
     question: Question
 
-    @OneToMany(type => QuestionResult, (questionResult) => questionResult.question, {})
+    @OneToMany(type => QuestionResult, (questionResult) => questionResult.answer, {})
     questionResults: QuestionResult[]
 }

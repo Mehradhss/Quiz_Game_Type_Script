@@ -44,4 +44,8 @@ export class User {
 
     @ManyToOne(() => Leaderboard, (leaderBoard) => leaderBoard.users, {})
     leaderBoard: Leaderboard
+
+    @ManyToMany(()=>User)
+    @JoinTable ({name : "user_rooms"})
+    users : User[]
 }

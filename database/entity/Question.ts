@@ -13,6 +13,7 @@ import {Entity, Column, PrimaryGeneratedColumn, ManyToOne, OneToMany, UpdateDate
 import {Answer} from "./Answer";
 import {Category} from "./Category";
 import {QuestionResult} from "./QuestionResult";
+import {GameQuestion} from "./GameQuestion";
 
 @Entity()
 export class Question {
@@ -22,10 +23,10 @@ export class Question {
     @Column({nullable: false})
     text: string;
 
-    @CreateDateColumn({ type: "timestamp", default: () => "CURRENT_TIMESTAMP(6)" })
+    @CreateDateColumn({type: "timestamp", default: () => "CURRENT_TIMESTAMP(6)"})
     public created_at: Date;
 
-    @UpdateDateColumn({ type: "timestamp", default: () => "CURRENT_TIMESTAMP(6)", onUpdate: "CURRENT_TIMESTAMP(6)" })
+    @UpdateDateColumn({type: "timestamp", default: () => "CURRENT_TIMESTAMP(6)", onUpdate: "CURRENT_TIMESTAMP(6)"})
     public updated_at: Date;
 
     @OneToMany((type) => Answer, (answer) => answer.question, {})
@@ -37,6 +38,6 @@ export class Question {
     })
     category: Category
 
-    @OneToMany(type => QuestionResult , (questionResult) => questionResult.question, {})
-    questionResults : QuestionResult[]
+    @OneToMany(() => GameQuestion, (gameQuestion) => gameQuestion.question)
+    gameQuestions: GameQuestion[]
 }

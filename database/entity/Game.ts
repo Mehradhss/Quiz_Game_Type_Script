@@ -11,6 +11,8 @@ import {
 import {Category} from "./Category";
 import {Question} from "./Question";
 import {User} from "./User";
+import {GameQuestion} from "./GameQuestion";
+import {GameRoom} from "./GameRoom";
 
 @Entity()
 export class Game {
@@ -28,4 +30,10 @@ export class Game {
 
     @ManyToOne((type) => Category, (category) => category.games)
     category: Category
+
+    @OneToMany(() => GameQuestion, (gameQuestion) => gameQuestion.game)
+    gameQuestions: GameQuestion[]
+
+    @OneToMany(()=>GameRoom , (gameRoom) =>gameRoom.game)
+    gameRooms : GameRoom[]
 }
