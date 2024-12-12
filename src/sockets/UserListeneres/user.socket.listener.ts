@@ -1,16 +1,18 @@
-import generateRoomId from "../../services/GameServices/RoomCreation";
-import createGame from "../../services/GameServices/game.creation.service";
-import joinGame from "../../services/GameServices/game.join.service";
-import {getGameQuestions} from "../../services/GameServices/GameQuestions";
+import generateRoomUuId from "../../services/Game/RoomCreation";
+import createGame from "../../services/Game/game.creation.service";
+import joinRoom from "../../services/Game/room.join.service";
+import {getGameQuestions} from "../../services/Game/GameQuestions";
 import {io} from "../../server/serverConfig";
 import asyncWrapper from "../../middleware/wrappers/asyncWrapper";
 import {getRedisClient} from "../../RedisConfig/RedisConfig";
 import {authSocketMiddleware} from "../../middleware/authMiddleware";
 import {Socket} from "socket.io";
 import socketWrapper from "../../middleware/wrappers/socketWrapper";
-import {playerReadyToStart} from "../../services/GameServices/GameReadyToStart";
+import {playerReadyToStart} from "../../services/Game/GameReadyToStart";
 import {getVerifiedUserService} from "../../services/Auth/getVerifiedUser.service";
-import getGame from "../../services/GameServices/game.search.service";
+import getGame from "../../services/Game/game.search.service";
+import {renew} from "../../services/Redis/redis.renew.expire.date.service";
+import createRoom from "../../services/Game/room.creation.service";
 
 const gameStatus = Object.freeze({
     PENDING: 'PENDING',
@@ -20,17 +22,13 @@ const gameStatus = Object.freeze({
     FINISHED: 'FINISHED'
 });
 
-type VerifiedUser = {
-    id: number
-}
-
 const v1UserRoute = io.of('/v1/user').use((socket, next) => {
     authSocketMiddleware(socket, next)
 })
 
 // const v1UserRoute = io.of('/v1/user')
 
-export const userSocketListeners = asyncWrapper(async (server) => {
+export const userSocketListeners = asyncWrapper(async () => {
         v1UserRoute.adapter.on("create-room", (room) => {
             console.log(`[${new Date().toISOString()}]`, `room ${room} was created`);
         })
@@ -44,89 +42,61 @@ export const userSocketListeners = asyncWrapper(async (server) => {
             const redisClient = await getRedisClient()
             redisClient.set(socketId, verifiedUser?.userId?.toString(), 'EX', 2 * 60 * 60)
 
-            socketWrapper(socket, 'createGame', async () => {
+            socketWrapper(socket, 'createRoom', async () => {
+                const socketId = socket.id
+
                 try {
-                    redisClient.exists(socketId, async (err, result) => {
-                        if (err) {
-                            throw new Error('session expired please try again' + err)
-                        }
+                    const newRoom = await createRoom(socketId)
 
-                        redisClient.expire(socketId, 2 * 60 * 60)
-                    })
+                    socket.join(newRoom.uuid)
 
-                    const roomId = generateRoomId()
-
-                    const Game = await createGame(roomId, socketId, gameStatus.PENDING)
-
-                    const gameId = Game.id
-
-                    console.log('roomId is : ', roomId)
-                    console.log('gameId is : ', gameId)
-
-                    socket.join(roomId)
-
-                    socket.emit('gameCreated', {roomId: roomId})
-                    console.log(`Game Created With Room id ${roomId}`)
-                } catch (error) {
-                    socket.emit('gameCreationError', {error: {message: "Game Creation error: " + error.message}});
-                    console.log(`Game Creation error is ${error}`)
+                    socket.emit('roomCreated', {roomId: newRoom.uuid})
+                } catch (e) {
+                    socket.emit("createRoomError", {error: {message: `unable to create room ${e.message}`}})
                 }
             })
 
-            socketWrapper(socket, 'joinGame', async (data) => {
-                redisClient.exists(socketId, async (err, result) => {
-                    if (err) {
-                        throw new Error('session expired please try again' + err)
-                    }
+            socketWrapper(socket, 'joinRoom', async (data) => {
+                const socketId = socket.id
 
-                    redisClient.expire(socketId, 2 * 60 * 60)
-                })
+                await renew(socketId)
 
                 const roomId = data.roomId
 
-                const room = io.sockets.adapter.rooms.get(roomId)
+                if (!roomId) {
+                    socket.emit('roomJoinError', {error: {message: "room id not found"}});
+
+                    return;
+                }
+
+                const room = v1UserRoute.adapter.rooms.get(roomId)
 
                 if (room && room.size < 2) {
-                    redisClient.get(roomId, async (err, gameId) => {
-                        if (err) {
-                            throw new Error('Error fetching data from Redis:' + err)
-                        } else if (!gameId) {
-                            socket.emit('gameJoinError', {error: {message: "game not found"}});
-                        }
+                    try {
+                        await joinRoom(socket, roomId)
+                    } catch (e) {
+                        socket.emit('roomJoinError', {error: {message: `unable to join game : ${e.message}`}});
 
-                        socket.join(roomId)
-                        socket.emit('gameJoin', {message: "game joined successfully with room id : " + roomId});
-
-                        try {
-                            await joinGame(gameId, socketId, gameStatus.STARTING)
-                            socket.join(roomId)
-                        } catch (e) {
-                            socket.emit('gameJoinError', {error: {message: "unable to join game"}});
-                            return
-                        }
-
-                        console.log('User joined game with room ID:', roomId);
-                    })
-                }
-            })
-
-            socketWrapper(socket, 'searchForGame', async (data) => {
-                redisClient.exists(socketId, async (err, result) => {
-                    if (err) {
-                        throw new Error('session expired please try again' + err)
+                        return
                     }
 
-                    redisClient.expire(socketId, 2 * 60 * 60)
-                })
+                    socket.emit('roomJoined', {roomId: roomId});
+                    console.log('User joined game with room ID:', roomId);
+
+                    return
+                }
+
+                socket.emit('roomJoinError', {error: {message: "room is full"}});
+                console.log('room is full')
+            })
+
+            socketWrapper(socket, 'searchForGame', async () => {
+                await renew();
 
                 try {
                     const game = await getGame(socketId, gameStatus.PENDING)
-                    console.log(game)
-                    const roomId = await redisClient.get(game?.id.toString(), err => {
-                        if (err) {
-                            return
-                        }
-                    })
+
+                    const roomId = game.gameRoom.uuid
 
                     const pendingGame = {
                         id: game.id,
@@ -139,6 +109,15 @@ export const userSocketListeners = asyncWrapper(async (server) => {
                 }
             })
 
+            socketWrapper(socket, 'createGame', async (data) => {
+                const roomId = data.roomId;
+
+                try {
+                    const newGame = await createGame(roomId, socketId, gameStatus.PENDING)
+                } catch (e: Error) {
+                    socket.emit('createGameError', {error: {message: `unable to create game : ${e.message}`}});
+                }
+            })
             // socketWrapper(socket, 'readyToStart', async (data) => {
             //     try {
             //         const roomId = data.roomId
@@ -168,7 +147,7 @@ export const userSocketListeners = asyncWrapper(async (server) => {
                         console.log('Error fetching data from Redis:', err)
                     } else if (gameId) {
                         // await gameInit(gameId, gameStatus.IN_GAME, socket.id)
-                        socket.on('fetchQuestion', async (data) => {
+                        socket.on('fetchQuestion', async () => {
                             try {
 
 

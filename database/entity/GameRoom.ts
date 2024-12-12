@@ -2,7 +2,7 @@ import {
     Column,
     CreateDateColumn,
     Entity,
-    ManyToOne,
+    OneToMany,
     PrimaryGeneratedColumn,
     UpdateDateColumn
 } from "typeorm";
@@ -11,10 +11,10 @@ import {Game} from "./Game";
 @Entity()
 export class GameRoom {
     @PrimaryGeneratedColumn()
-    id : number
+    id: number
 
-    @Column({nullable : false})
-    uuid : string
+    @Column({nullable: false})
+    uuid: string
 
     @CreateDateColumn({type: "timestamp", default: () => "CURRENT_TIMESTAMP(6)"})
     public created_at: Date;
@@ -22,6 +22,6 @@ export class GameRoom {
     @UpdateDateColumn({type: "timestamp", default: () => "CURRENT_TIMESTAMP(6)", onUpdate: "CURRENT_TIMESTAMP(6)"})
     public updated_at: Date;
 
-    @ManyToOne(()=>Game , (game) => game.gameRooms)
-    game:Game
+    @OneToMany(() => Game, (game) => game.gameRoom)
+    games: Game[]
 }

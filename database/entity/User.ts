@@ -11,8 +11,8 @@ import {
 } from "typeorm"
 import {QuestionResult} from "./QuestionResult";
 import {Game} from "./Game";
-import {Question} from "./Question";
 import {Leaderboard} from "./Leaderboard";
+import {GameRoom} from "./GameRoom";
 
 
 @Entity()
@@ -45,7 +45,7 @@ export class User {
     @ManyToOne(() => Leaderboard, (leaderBoard) => leaderBoard.users, {})
     leaderBoard: Leaderboard
 
-    @ManyToMany(()=>User)
+    @ManyToMany(()=>GameRoom)
     @JoinTable ({name : "user_rooms"})
-    users : User[]
+    gameRooms : GameRoom[]
 }

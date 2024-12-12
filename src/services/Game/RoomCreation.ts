@@ -1,4 +1,4 @@
-export default function generateRoomId() {
+export default function generateRoomUuId() {
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     const length = 8;
     let roomId = '';
