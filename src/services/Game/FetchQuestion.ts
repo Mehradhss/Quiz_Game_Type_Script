@@ -7,7 +7,11 @@ async function getGameQuestion(gameId, userId) {
     try {
         // console.log('game id is ', gameId)
         const gameRepository = await dataSource.getRepository('game')
-        const foundGame = await gameRepository.findOneOrFail({where: {id: gameId}, relations: ['questions']})
+        const foundGame = await gameRepository
+            .findOneOrFail({where: {id: gameId}, relations: ['questions']})
+            .then(game => {
+                return game
+            })
         // console.log(foundGame)
         let availableQuestions = foundGame.questions
 
