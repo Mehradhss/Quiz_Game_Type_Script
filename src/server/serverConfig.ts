@@ -1,8 +1,9 @@
-import {Server, Socket} from 'socket.io'
+import {Server} from 'socket.io'
 import cors from 'cors';
 import http from "http"; // Correct import for http
 import express from "express"; // Import express
 import {router} from "../routes/authRoutes";
+import {expressAuthMiddleware} from "../middleware/expressAuthMiddleware";
 
 const app = express(); // Create Express app
 app.use(express.json())
@@ -14,6 +15,8 @@ app.use(cors({
     credentials: false,
 }));
 app.use(router)
+
+app.use(expressAuthMiddleware)
 app.all('*', (req, res) => {
     res.status(404).send('URL not found')
 })
