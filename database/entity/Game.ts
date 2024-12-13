@@ -10,6 +10,7 @@ import {
 import {Category} from "./Category";
 import {GameQuestion} from "./GameQuestion";
 import {GameRoom} from "./GameRoom";
+import {User} from "./User";
 
 @Entity()
 export class Game {
@@ -33,4 +34,7 @@ export class Game {
 
     @ManyToOne(() => GameRoom, (gameRoom) => gameRoom.games)
     gameRoom: GameRoom
+
+    @ManyToOne(() => User, (user) => user.wonGames)
+    winner: User
 }
