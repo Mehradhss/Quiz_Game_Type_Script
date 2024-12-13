@@ -1,7 +1,7 @@
 import {dataSource} from "../../../database/DataSource";
 import {GameRoom} from "../../../database/entity/GameRoom";
 
-export default async function getJoinAbleGameRoom(userId) {
+const getJoinAbleGameRoom = async function (userId) {
     const gameRoomRepository = await dataSource.getRepository(GameRoom);
 
     const foundGameRoom = await gameRoomRepository
@@ -14,3 +14,26 @@ export default async function getJoinAbleGameRoom(userId) {
 
     return foundGameRoom;
 };
+
+const getEmptyGameRoom = async function () {
+    try {
+        const gameRoomRepository = await dataSource.getRepository(GameRoom);
+
+        const foundGameRoom = await gameRoomRepository
+            .createQueryBuilder('gameRooms')
+            .leftJoinAndSelect('gameRooms.users', 'users')
+            .groupBy('gameRooms.id')
+            .having('COUNT(users.id) = 0')
+            .getOne();
+
+        return foundGameRoom;
+    } catch (e) {
+        console.log("error in finding empty game room", e);
+        throw e;
+    }
+}
+
+export {
+    getEmptyGameRoom ,
+    getJoinAbleGameRoom
+}

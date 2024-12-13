@@ -4,7 +4,7 @@ import {Socket} from "socket.io";
 import {User} from "../../../database/entity/User";
 
 
-export default async function joinRoom(socket: Socket, roomUuid , userId) {
+export default async function joinRoom(socket: Socket, roomUuid, userId) {
     const gameRoomRepository = await dataSource.getRepository(GameRoom)
     const userRepository = await dataSource.getRepository(User)
 
@@ -16,9 +16,9 @@ export default async function joinRoom(socket: Socket, roomUuid , userId) {
 
     const user = await userRepository.findOneOrFail({
         where: {
-            id: parseInt(userId)
-        } ,
-        relations : ["gameRooms"]
+            id: userId
+        },
+        relations: ["gameRooms"]
     })
     user.gameRooms.push(gameRoom)
 
@@ -31,6 +31,4 @@ export default async function joinRoom(socket: Socket, roomUuid , userId) {
     })
 
     socket.join(roomUuid)
-
-    return gameRoom
 }

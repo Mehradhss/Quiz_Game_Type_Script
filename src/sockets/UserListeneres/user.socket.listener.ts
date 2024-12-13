@@ -14,10 +14,9 @@ import createRoom from "../../services/Game/room.creation.service";
 import {dataSource} from "../../../database/DataSource";
 import {Category} from "../../../database/entity/Category";
 import {GameRoom} from "../../../database/entity/GameRoom";
-import {json} from "express";
-import {roomExpired} from "../../services/Redis/redis.room.expired.service";
 import {renew} from "../../services/Redis/redis.renew.expire.date.service";
-import getJoinAbleGameRoom from "../../services/Game/game.room.search.service";
+import {getJoinAbleGameRoom, getEmptyGameRoom} from "../../services/Game/game.room.search.service";
+import isUserJoined from "../../services/Game/room.is.user.joined.service";
 
 const gameStatus = Object.freeze({
     PENDING: 'PENDING',
@@ -44,15 +43,31 @@ export const userSocketListeners = asyncWrapper(async () => {
 
                 const verifiedUser = await getVerifiedUserService(socket?.handshake?.headers.authorization.split('|')[1])
 
-                const verifiedUserId = verifiedUser?.userId
+                verifiedUser.gameRooms.forEach((gameRoom: GameRoom) => {
+                    socket.join(gameRoom.uuid)
+                })
+
+                const verifiedUserId = verifiedUser?.id
 
                 const redisClient = await getRedisClient()
 
                 socketWrapper(socket, 'createGameRoom', async () => {
                     try {
+                        const availableEmptyRoom = await getEmptyGameRoom()
+
+                        if (availableEmptyRoom) {
+                            await joinRoom(socket, availableEmptyRoom.uuid, verifiedUserId)
+
+                            redisClient.set(`room.${availableEmptyRoom.uuid}`, availableEmptyRoom.uuid, "EX", 30 * 60)
+
+                            socket.emit('gameRoomCreated', {roomId: availableEmptyRoom.uuid})
+
+                            return
+                        }
+
                         const newRoom = await createRoom(verifiedUserId)
 
-                        redisClient.set(`room.${newRoom.uuid}`, newRoom.uuid, "EX", 5)
+                        redisClient.set(`room.${newRoom.uuid}`, newRoom.uuid, "EX", 30 * 60)
 
                         socket.join(newRoom.uuid)
 
@@ -72,11 +87,23 @@ export const userSocketListeners = asyncWrapper(async () => {
                         return;
                     }
 
-                    const room = v1UserRoute.adapter.rooms.get(roomId)
+                    const gameRoom = await dataSource.getRepository(GameRoom).findOneOrFail({
+                        where: {
+                            uuid: roomId
+                        },
+                        relations: ['users']
+                    });
 
-                    if (room && room.size < 2) {
+                    const isVerifiedUserJoined = await isUserJoined(gameRoom, verifiedUserId);
+                    if (gameRoom && gameRoom.users.length < 2) {
                         try {
-                            const gameRoom = await joinRoom(socket, roomId, verifiedUserId);
+                            if (isVerifiedUserJoined) {
+                                socket.emit('gameRoomJoinError', {error: {message: "user already joined"}});
+
+                                return
+                            }
+
+                            await joinRoom(socket, roomId, verifiedUserId);
 
                             await renew(`room.${gameRoom.uuid}`, 'room')
                         } catch (e) {
@@ -104,6 +131,8 @@ export const userSocketListeners = asyncWrapper(async () => {
                             roomId: pendingGameRoom.uuid
                         }
 
+                        await renew(`room.${pendingGameRoom.uuid}`, 'room')
+
                         socket.emit('searchForGameSuccess', {data: pendingGameRoomData});
                     } catch (e) {
                         socket.emit('searchForGameError', {error: {message: "unable to search for game", e}});
@@ -112,7 +141,15 @@ export const userSocketListeners = asyncWrapper(async () => {
 
                 socketWrapper(socket, 'selectCategory', async (data) => {
                     try {
-                        const categoryId = data.category_id;
+                        data = JSON.parse(data);
+
+                        const roomId = data.roomId;
+
+                        if (!roomId || verifiedUser.gameRooms.some((gameRoom) => gameRoom.uuid === roomId)) {
+                            socket.emit("selectCategoryError", {error: {message: "room not found"}});
+                        }
+
+                        const categoryId = data.categoryId;
 
                         const categoryRepository = await dataSource.getRepository(Category);
                         const category = await categoryRepository.findOneOrFail({
@@ -121,7 +158,9 @@ export const userSocketListeners = asyncWrapper(async () => {
                             }
                         })
 
-                        socket.emit("categorySelected", {
+                        await renew(`room.${roomId}`, 'room')
+
+                        v1UserRoute.to(roomId).emit("categorySelected", {
                             data: {
                                 category: category
                             }
@@ -134,6 +173,8 @@ export const userSocketListeners = asyncWrapper(async () => {
                 socketWrapper(socket, 'createGame', async (data) => {
                     try {
                         const roomId = data.roomId;
+
+                        const categoryId = data.category_id;
 
                         if (!roomId) {
                             throw new Error('room id not provided');
@@ -156,9 +197,14 @@ export const userSocketListeners = asyncWrapper(async () => {
                             throw new Error("not enough players");
                         }
 
-                        const newGame = await createGame(gameRoom, gameStatus.PENDING)
+                        if (!await isUserJoined(gameRoom, verifiedUserId)) {
+                            throw new Error("user not joined");
+                        }
 
-                        socket.emit('gameCreated', {data: {game: newGame}})
+                        socket.join(gameRoom.uuid)
+                        const newGame = await createGame(gameRoom, gameStatus.PENDING, categoryId)
+
+                        v1UserRoute.to(gameRoom.uuid).emit('gameCreated', {data: {game: newGame}})
                     } catch (e) {
                         socket.emit('createGameError', {error: {message: `unable to create game : ${e.message}`}});
                     }

@@ -1,3 +1,6 @@
+import {dataSource} from "../../../database/DataSource";
+import {User} from "../../../database/entity/User";
+
 const jwt = require("jsonwebtoken");
 
 export const getVerifiedUserService = async (accessToken) => {
@@ -7,5 +10,12 @@ export const getVerifiedUserService = async (accessToken) => {
         verifiedUser = user
     })
 
-    return verifiedUser
+    const user = await dataSource.getRepository(User).findOneOrFail({
+        where : {
+            id : verifiedUser.userId
+        } ,
+        relations : ["gameRooms"]
+    })
+
+    return user
 }
