@@ -1,13 +1,7 @@
 import {dataSource} from "../../../database/DataSource";
-import {Game} from "../../../database/entity/Game";
-import {getRedisClient} from "../../RedisConfig/RedisConfig";
-import {User} from "../../../database/entity/User";
-import {getSocketUser} from "../Redis/redis.get.user.service";
 import {GameRoom} from "../../../database/entity/GameRoom";
 
-export default async function getGameRoom(userId, status) {
-    const redisClient = await getRedisClient()
-
+export default async function getGameRoom(userId) {
     const gameRoomRepository = await dataSource.getRepository(GameRoom);
 
     const foundGameRoom = await gameRoomRepository

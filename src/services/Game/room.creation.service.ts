@@ -1,5 +1,4 @@
 import generateRoomUuId from "./RoomCreation";
-import {getSocketUser} from "../Redis/redis.get.user.service";
 import {dataSource} from "../../../database/DataSource";
 import {User} from "../../../database/entity/User";
 import {GameRoom} from "../../../database/entity/GameRoom";

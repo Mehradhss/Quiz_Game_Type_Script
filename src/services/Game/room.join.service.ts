@@ -2,7 +2,6 @@ import {dataSource} from "../../../database/DataSource";
 import {GameRoom} from "../../../database/entity/GameRoom";
 import {Socket} from "socket.io";
 import {User} from "../../../database/entity/User";
-import {getSocketUser} from "../Redis/redis.get.user.service";
 
 
 export default async function joinRoom(socket: Socket, roomUuid , userId) {
