@@ -1,12 +1,13 @@
 import {
     Column,
     CreateDateColumn,
-    Entity,
+    Entity, ManyToMany,
     OneToMany,
     PrimaryGeneratedColumn,
     UpdateDateColumn
 } from "typeorm";
 import {Game} from "./Game";
+import {User} from "./User";
 
 @Entity()
 export class GameRoom {
@@ -24,4 +25,7 @@ export class GameRoom {
 
     @OneToMany(() => Game, (game) => game.gameRoom)
     games: Game[]
+
+    @ManyToMany(() => User , (user) => user.gameRooms)
+    users : User[]
 }

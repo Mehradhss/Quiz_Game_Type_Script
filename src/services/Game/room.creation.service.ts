@@ -4,15 +4,14 @@ import {dataSource} from "../../../database/DataSource";
 import {User} from "../../../database/entity/User";
 import {GameRoom} from "../../../database/entity/GameRoom";
 
-export default async function createRoom(socketId) {
+export default async function createRoom(userId) {
     const userRepository = await dataSource.getRepository(User)
 
     const uuId = generateRoomUuId();
     const newRoom = new GameRoom()
     newRoom.uuid = uuId
 
-    const userId = await getSocketUser(socketId);
-    const foundUser = await userRepository.findOneOrFail({where: {id: parseInt(userId)}})
+    const foundUser = await userRepository.findOneOrFail({where: {id: userId}, relations: ["gameRooms"]})
     foundUser.gameRooms.push(newRoom)
 
     await dataSource.manager.transaction(async (transactionalEntityManager) => {

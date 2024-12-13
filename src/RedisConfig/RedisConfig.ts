@@ -3,6 +3,8 @@ import retry from "async-retry";
 
 let redisClient: Redis;
 
+let subscriber: Redis
+
 async function createRedisClient() {
     const options: RedisOptions = {
         host: process.env.REDIS_HOST, // Replace 'your_redis_host' with your Redis host
@@ -21,6 +23,10 @@ async function createRedisClient() {
     }
     await retry(async (bail) => {
         redisClient = new Redis(options)
+
+        subscriber = redisClient.duplicate(); // Duplicate connection for pub/sub
+        subscriber.subscribe(`__keyevent@0__:expired`);
+
         console.log(`[${Date.now()}]`, 'redis connected successfully')
     }, retryOptions)
 }
@@ -29,10 +35,20 @@ function getRedisClient() {
     if (!redisClient) {
         throw new Error('no redis client found')
     }
+
     return redisClient
+}
+
+function getRedisSubscriber() {
+    if (!subscriber) {
+        throw new Error('no redis client found')
+    }
+
+    return subscriber
 }
 
 export {
     getRedisClient,
-    createRedisClient
+    createRedisClient,
+    getRedisSubscriber
 }
