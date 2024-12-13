@@ -3,6 +3,7 @@ import createToken from "../../../services/Token/token.service";
 import loginService from "../../../services/Auth/login.service";
 import asyncHandler from "express-async-handler";
 import * as express from "express";
+import jwt from "jsonwebtoken";
 
 export class UserController {
     register = asyncHandler(async (req, res) => {
@@ -11,12 +12,19 @@ export class UserController {
 
             const user: any = await register(body.username, body.password)
 
-            const token = createToken(user)
+            const accessToken = createToken(user.id, "access");
+            const refreshToken = createToken(user.id, "refresh");
 
             const response = {
                 username: user.username,
-                token: token
+                token: accessToken
             }
+            res.cookie('jwt', refreshToken, {
+                httpOnly: true,
+                maxAge: 24 * 60 * 60 * 1000,
+                sameSite: "none",
+                secure: true
+            });
 
             res.json(response);
         } catch (error) {
@@ -29,13 +37,39 @@ export class UserController {
         try {
             const body = {...req.body}
 
-            const token = await loginService(req, res, body.username, body.password)
+            const tokens = await loginService(req, res, body.username, body.password)
 
-            res.json({token: token}).status(200)
+            res.cookie('jwt', tokens.refreshToken, {
+                httpOnly: true,
+                maxAge: 24 * 60 * 60 * 1000,
+                sameSite: "none",
+                secure: true
+            });
+
+            res.json({token: tokens.accessToken}).status(200)
         } catch (error) {
             console.log('error getting request body' + error)
 
             res.status(408).send()
         }
     });
+
+    refresh = asyncHandler(async (req: express.Request, res: express.Response) => {
+        if (!req.cookies?.jwt) {
+            res.status(406).json({message: 'Unauthorized'});
+        }
+
+        const refreshToken = req.cookies.jwt;
+
+        jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET,
+            (err, decoded: any) => {
+                if (err) {
+                    return res.status(406).json({message: 'Unauthorized'});
+                }
+
+                const accessToken = createToken(decoded.userId, "access");
+                res.json({accessToken});
+            })
+    })
 }
+

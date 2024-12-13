@@ -12,6 +12,8 @@ router.post('/api/v1/user/registration', userController.register)
 
 router.post('/api/v1/user/login', userController.login)
 
+router.get('api/v1/user/refresh', userController.refresh)
+
 router.get('/api/v1/category/', categoryController.index)
 
 export {

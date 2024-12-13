@@ -19,7 +19,14 @@ export default async function loginService(req: Request, res: Response, username
             }
         })
 
-        return createToken(foundUser);
+        const accessToken = createToken(foundUser.id, "access");
+        const refreshToken = createToken(foundUser.id, "refresh");
+
+        return {
+            refreshToken: refreshToken,
+            accessToken: accessToken
+        };
+
     } catch (error) {
         res.status(401).send("username or password incorrect ! ")
         throw error

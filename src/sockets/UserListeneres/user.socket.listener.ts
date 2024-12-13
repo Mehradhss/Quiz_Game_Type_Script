@@ -100,7 +100,7 @@ export const userSocketListeners = asyncWrapper(async () => {
 
                 socketWrapper(socket, 'searchForGameRoom', async () => {
                     try {
-                        const pendingGameRoom = await getGameRoom(verifiedUserId, gameStatus.PENDING)
+                        const pendingGameRoom = await getGameRoom(verifiedUserId)
 
                         const pendingGameRoomData = {
                             id: pendingGameRoom.id,
