@@ -48,7 +48,7 @@ export class User {
     @OneToMany(() => Game, (game) => game.winner, {})
     wonGames : Game[]
 
-    @ManyToMany(()=>GameRoom)
+    @ManyToMany(()=>GameRoom , (gameRoom) => gameRoom.users)
     @JoinTable ({name : "user_rooms"})
     gameRooms : GameRoom[]
 }
