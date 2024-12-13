@@ -4,10 +4,10 @@ import asyncWrapper from "../../middleware/wrappers/asyncWrapper";
 
 export const roomExpired = asyncWrapper(async (roomId) => {
     const gameRoomRepository = await dataSource.getRepository(GameRoom);
-
+    console.log(roomId)
     const gameRoom = await gameRoomRepository.findOneOrFail({
         where: {
-            id: roomId
+            uuid: roomId
         },
         relations: ["users"]
     });

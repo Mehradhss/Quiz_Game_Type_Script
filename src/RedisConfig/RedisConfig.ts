@@ -1,5 +1,7 @@
 import Redis, {RedisOptions} from "ioredis";
 import retry from "async-retry";
+import {roomExpired} from "../services/Redis/redis.room.expired.service";
+import asyncWrapper from "../middleware/wrappers/asyncWrapper";
 
 let redisClient: Redis;
 
@@ -23,9 +25,31 @@ async function createRedisClient() {
     }
     await retry(async (bail) => {
         redisClient = new Redis(options)
-
         subscriber = redisClient.duplicate(); // Duplicate connection for pub/sub
+
+        redisClient.config("SET", "notify-keyspace-events", "Ex");
+
         subscriber.subscribe(`__keyevent@0__:expired`);
+        await subscriber.on('message', async (channel, expiredKey) => {
+            try {
+                console.log("new message coming form redis : ", expiredKey)
+
+                const splitKey = expiredKey.split('.')
+
+                const expiredKeyEntity = splitKey[0]
+
+                switch (expiredKeyEntity) {
+                    case 'room':
+                        const roomUuid = splitKey[1]
+                        await roomExpired(roomUuid)
+                        break
+                    default:
+                        break
+                }
+            } catch (e) {
+                console.log(e)
+            }
+        })
 
         console.log(`[${Date.now()}]`, 'redis connected successfully')
     }, retryOptions)

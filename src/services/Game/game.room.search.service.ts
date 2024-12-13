@@ -1,7 +1,7 @@
 import {dataSource} from "../../../database/DataSource";
 import {GameRoom} from "../../../database/entity/GameRoom";
 
-export default async function getGameRoom(userId) {
+export default async function getJoinAbleGameRoom(userId) {
     const gameRoomRepository = await dataSource.getRepository(GameRoom);
 
     const foundGameRoom = await gameRoomRepository
@@ -13,4 +13,4 @@ export default async function getGameRoom(userId) {
         .getOne();
 
     return foundGameRoom;
-}
+};

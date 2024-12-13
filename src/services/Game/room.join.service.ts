@@ -31,4 +31,6 @@ export default async function joinRoom(socket: Socket, roomUuid , userId) {
     })
 
     socket.join(roomUuid)
+
+    return gameRoom
 }

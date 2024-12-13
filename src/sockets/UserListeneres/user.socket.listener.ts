@@ -10,12 +10,14 @@ import {Socket} from "socket.io";
 import socketWrapper from "../../middleware/wrappers/socketWrapper";
 import {playerReadyToStart} from "../../services/Game/GameReadyToStart";
 import {getVerifiedUserService} from "../../services/Auth/getVerifiedUser.service";
-import getGameRoom from "../../services/Game/game.room.search.service";
 import createRoom from "../../services/Game/room.creation.service";
 import {dataSource} from "../../../database/DataSource";
 import {Category} from "../../../database/entity/Category";
 import {GameRoom} from "../../../database/entity/GameRoom";
 import {json} from "express";
+import {roomExpired} from "../../services/Redis/redis.room.expired.service";
+import {renew} from "../../services/Redis/redis.renew.expire.date.service";
+import getJoinAbleGameRoom from "../../services/Game/game.room.search.service";
 
 const gameStatus = Object.freeze({
     PENDING: 'PENDING',
@@ -46,18 +48,11 @@ export const userSocketListeners = asyncWrapper(async () => {
 
                 const redisClient = await getRedisClient()
 
-                const redisSubscriber = getRedisSubscriber();
-
-                // await redisSubscriber.on('message', (channel, expiredKey) => {
-                //     if (expiredKey === "roomExpired") {
-                //         console.log(`Key "${expiredKey}" expired. Running callback.`);
-                //         onKeyExpired(expiredKey);
-                //     }
-                // });
-
                 socketWrapper(socket, 'createGameRoom', async () => {
                     try {
                         const newRoom = await createRoom(verifiedUserId)
+
+                        redisClient.set(`room.${newRoom.uuid}`, newRoom.uuid, "EX", 5)
 
                         socket.join(newRoom.uuid)
 
@@ -81,7 +76,9 @@ export const userSocketListeners = asyncWrapper(async () => {
 
                     if (room && room.size < 2) {
                         try {
-                            await joinRoom(socket, roomId, verifiedUserId)
+                            const gameRoom = await joinRoom(socket, roomId, verifiedUserId);
+
+                            await renew(`room.${gameRoom.uuid}`, 'room')
                         } catch (e) {
                             socket.emit('gameRoomJoinError', {error: {message: `unable to join game : ${e.message}`}});
 
@@ -100,7 +97,7 @@ export const userSocketListeners = asyncWrapper(async () => {
 
                 socketWrapper(socket, 'searchForGameRoom', async () => {
                     try {
-                        const pendingGameRoom = await getGameRoom(verifiedUserId)
+                        const pendingGameRoom = await getJoinAbleGameRoom(verifiedUserId)
 
                         const pendingGameRoomData = {
                             id: pendingGameRoom.id,
