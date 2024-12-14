@@ -212,6 +212,9 @@ export const userSocketListeners = asyncWrapper(async () => {
                         }
 
                         socket.join(gameRoom.uuid)
+
+                        await renew(`room.${roomId}`, 'room')
+
                         const newGame = await createGame(gameRoom, gameStatus.PENDING, categoryId)
 
                         v1UserRoute.to(gameRoom.uuid).emit('gameCreated', {data: {game: newGame}})
@@ -238,8 +241,13 @@ export const userSocketListeners = asyncWrapper(async () => {
                             },
                             relations: ["users"]
                         })
+
+                        if (game.status === gameStatus.STARTED) {
+                            throw new Error("game already started")
+                        }
+
                         if (game.users.length < 2) {
-                            throw new Error("not enough players to ready up !")
+                            throw new Error("not enough players to ready up !");
                         }
 
                         const playerReadyKey = `game.${gameId}.ready.players`;
@@ -262,6 +270,8 @@ export const userSocketListeners = asyncWrapper(async () => {
 
                         await renew(playerReadyKey, "game")
 
+                        await renew(`room.${roomId}`, 'room')
+
                         v1UserRoute.to(roomId).emit('roomPlayerReady', {message: {user: readiedUpUser}})
                         socket.emit("playerReady", {message: {user: readiedUpUser}})
                     } catch (err) {
@@ -277,15 +287,20 @@ export const userSocketListeners = asyncWrapper(async () => {
                         if (!roomId) {
                             throw new Error("room id not provided")
                         }
+                        const socketRoom = v1UserRoute.adapter.rooms.get(roomId);
 
                         const gameId = data.gameId;
                         if (!gameId) {
                             throw new Error("game id not provided")
                         }
 
+                        if (socketRoom.size < 2) {
+                            throw new Error("a player disconnected!")
+                        }
+
                         const playerReadyKey = `game.${gameId}.ready.players`;
                         if (!await redisClient.exists(playerReadyKey) || await redisClient.hlen(playerReadyKey) < 2) {
-                            throw new Error("players dont ready up")
+                            throw new Error("players must ready up")
                         }
 
                         const game = await dataSource.getRepository(Game).findOneOrFail({
@@ -294,15 +309,22 @@ export const userSocketListeners = asyncWrapper(async () => {
                             },
                             relations: ["users", "gameQuestions", "category"]
                         });
+                        if (game.status === gameStatus.STARTED) {
+                            throw new Error("game already started")
+                        }
                         if (game.users.length < 2) {
-                            throw new Error("not enough players to ready up !");
+                            throw new Error("not enough players to start game !");
                         }
 
-                        await renew(playerReadyKey, "room")
+                        await renew(playerReadyKey, "game")
+
+                        await renew(`room.${roomId}`, 'room')
 
                         const started = await startGame(game, gameStatus.STARTED)
-                        v1UserRoute.to(roomId).emit("gameStarted", {message: {game: game}})
+
+                        v1UserRoute.to(roomId).emit("gameStarted", {message: {game: started}})
                     } catch (e) {
+                        console.log(e)
                         socket.emit("gameStartError", {error: {message: `game failed to start : ${e.message}`}})
                     }
                 })

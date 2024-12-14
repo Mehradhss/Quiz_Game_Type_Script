@@ -11,13 +11,11 @@ export const startGame = async function (game: Game, status: string) {
         .take(10)
         .getMany();
 
-    fetchedQuestions.forEach((question: Question) => {
+    await fetchedQuestions.forEach(async (question: Question) => {
         const gameQuestion = new GameQuestion();
         gameQuestion.game = game;
         gameQuestion.question = question;
-        gameQuestionRepository.save(gameQuestion);
-
-        game.gameQuestions.push(gameQuestion);
+        await gameQuestionRepository.save(gameQuestion);
     })
 
     game.status = status;
