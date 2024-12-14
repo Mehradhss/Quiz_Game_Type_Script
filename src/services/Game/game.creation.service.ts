@@ -37,5 +37,6 @@ export default async function createGame(gameRoom: GameRoom, status, categoryId)
         return newGame
     } catch (err) {
         console.log(`game creation err is ${err}`);
+        throw err
     }
 }

@@ -14,7 +14,7 @@ export const getVerifiedUserService = async (accessToken) => {
         where : {
             id : verifiedUser.userId
         } ,
-        relations : ["gameRooms"]
+        relations : ["gameRooms" , "games"]
     })
 
     return user
