@@ -329,6 +329,15 @@ export const userSocketListeners = asyncWrapper(async () => {
                     }
                 })
 
+                socketWrapper(socket, 'fetchQuestion', async (data) => {
+                    try {
+
+                    } catch (e) {
+                        console.log(e)
+                        socket.emit("fetchQuestionError", {error: {message: `fetch question failed : ${e.message}`}})
+                    }
+                })
+
                 socketWrapper(socket, 'disconnect', async () => {
                     if (redisClient.exists(socketId)) {
                         redisClient.del(socketId)

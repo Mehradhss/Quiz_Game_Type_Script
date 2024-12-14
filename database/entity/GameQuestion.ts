@@ -1,4 +1,4 @@
-import {Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn} from "typeorm";
+import {Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn} from "typeorm";
 import {Game} from "./Game";
 import {Question} from "./Question";
 import {QuestionResult} from "./QuestionResult";
@@ -7,6 +7,9 @@ import {QuestionResult} from "./QuestionResult";
 export class GameQuestion {
     @PrimaryGeneratedColumn()
     id: number
+
+    @Column()
+    is_fetched: boolean
 
     @ManyToOne(() => Game, (game) => game.gameQuestions)
     game: Game
