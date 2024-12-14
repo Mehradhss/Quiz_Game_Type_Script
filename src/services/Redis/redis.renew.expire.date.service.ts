@@ -10,6 +10,9 @@ export const renew = asyncWrapper(async (key, type) => {
         case "room" :
             expirationTime = 30 * 60;
             break;
+        case "game" :
+            expirationTime = 3 * 60 * 60
+            break
         default:
             expirationTime = 2 * 60 * 60;
             break;

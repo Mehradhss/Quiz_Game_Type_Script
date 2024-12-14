@@ -5,7 +5,7 @@ import {
     ManyToOne,
     OneToMany,
     UpdateDateColumn,
-    CreateDateColumn
+    CreateDateColumn, ManyToMany
 } from "typeorm"
 import {Category} from "./Category";
 import {GameQuestion} from "./GameQuestion";
@@ -28,6 +28,9 @@ export class Game {
 
     @ManyToOne(() => Category, (category) => category.games)
     category: Category
+
+    @ManyToMany(() => User , (user) => user.games)
+    users : User[]
 
     @OneToMany(() => GameQuestion, (gameQuestion) => gameQuestion.game)
     gameQuestions: GameQuestion[]
