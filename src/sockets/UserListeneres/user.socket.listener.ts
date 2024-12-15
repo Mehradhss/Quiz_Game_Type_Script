@@ -568,7 +568,7 @@ export const userSocketListeners = asyncWrapper(async () => {
 
                             await redisClient.hset(playerEndKey, stringUserId, stringUserId)
 
-                            if (redisClient.hlen(playerEndKey) === game.users.length) {
+                            if (await redisClient.hlen(playerEndKey) === game.users.length) {
                                 await endGame(game, gameStatus.FINISHED)
 
                                 v1UserRoute.to(game.gameRoom.uuid).emit("gameEnded", {
