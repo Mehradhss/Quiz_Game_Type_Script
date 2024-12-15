@@ -1,7 +1,6 @@
 import generateRoomUuId from "../../services/Game/RoomCreation";
 import createGame from "../../services/Game/game.creation.service";
 import joinRoom from "../../services/Game/room.join.service";
-import {getGameQuestions} from "../../services/Game/GameQuestions";
 import {io} from "../../server/serverConfig";
 import asyncWrapper from "../../middleware/wrappers/asyncWrapper";
 import {getRedisClient, getRedisSubscriber} from "../../RedisConfig/RedisConfig";
@@ -18,8 +17,6 @@ import {renew} from "../../services/Redis/redis.renew.expire.date.service";
 import {getJoinAbleGameRoom, getEmptyGameRoom} from "../../services/Game/game.room.search.service";
 import isUserJoined from "../../services/Game/room.is.user.joined.service";
 import {Game} from "../../../database/entity/Game";
-import {release} from "node:os";
-import {start} from "node:repl";
 import {startGame} from "../../services/Game/game.start.service";
 import {User} from "../../../database/entity/User";
 import {fetchQuestion} from "../../services/Game/game.fetch.question.service";
@@ -27,6 +24,8 @@ import {submitAnswer} from "../../services/Game/game.submit.answer.service";
 import {leaveRoom} from "../../services/Game/room.leave.service";
 import {leaveGame} from "../../services/Game/game.leave.service";
 import {endGame} from "../../services/Game/game.end.service";
+import {gameResource} from "../../resources/game.resource";
+import {userResource} from "../../resources/user.resource";
 
 const gameStatus = Object.freeze({
     PENDING: 'PENDING',
@@ -285,6 +284,62 @@ export const userSocketListeners = asyncWrapper(async () => {
                     }
                 })
 
+                socketWrapper(socket, "unreadyToStart", async (data) => {
+                    try {
+                        data = JSON.parse(data);
+
+                        const roomId = data.roomId
+                        if (!roomId) {
+                            throw new Error("room id not provided")
+                        }
+
+                        const gameId = data.gameId
+                        if (!gameId) {
+                            throw new Error("game id not provided")
+                        }
+                        const game = await dataSource.getRepository(Game).findOneOrFail({
+                            where: {
+                                id: gameId
+                            },
+                            relations: ["users"]
+                        })
+
+                        if (game.status === gameStatus.STARTED) {
+                            throw new Error("game already started")
+                        }
+
+                        if (game.users.length < 2) {
+                            throw new Error("not enough players to ready up !");
+                        }
+
+                        const playerReadyKey = `game.${gameId}.ready.players`;
+
+                        const stringUserId = verifiedUserId.toString();
+
+                        if (!await redisClient.exists(playerReadyKey) || !await redisClient.hexists(playerReadyKey, stringUserId)) {
+                            throw new Error('player has not readied up yet!')
+                        }
+
+                        await redisClient.hdel(playerReadyKey, stringUserId)
+
+                        const player = await dataSource.getRepository(User).findOneOrFail({
+                            where: {
+                                id: verifiedUserId
+                            }
+                        })
+
+                        await renew(playerReadyKey, "game")
+
+                        await renew(`room.${roomId}`, 'room')
+
+                        v1UserRoute.to(roomId).emit('roomPlayerReady', {data: {user: player}})
+                        socket.emit("playerUnReady", {data: {user: userResource(player)}})
+                    } catch (err) {
+                        socket.emit('unreadyToStartError', {error: {message: `ready up failed to : ${err.message}`}})
+                    }
+
+                })
+
                 socketWrapper(socket, 'startGame', async (data) => {
                     try {
                         data = JSON.parse(data);
@@ -313,7 +368,7 @@ export const userSocketListeners = asyncWrapper(async () => {
                             where: {
                                 id: gameId
                             },
-                            relations: ["users", "gameQuestions", "category"]
+                            relations: ["users", "gameQuestions", "category", "session"]
                         });
                         if (game.status === gameStatus.STARTED) {
                             throw new Error("game already started")
@@ -326,9 +381,9 @@ export const userSocketListeners = asyncWrapper(async () => {
 
                         await renew(`room.${roomId}`, 'room')
 
-                        const started = await startGame(game, gameStatus.STARTED)
+                        const startedGame = await startGame(game, gameStatus.STARTED)
 
-                        v1UserRoute.to(roomId).emit("gameStarted", {data: {game: started}})
+                        v1UserRoute.to(roomId).emit("gameStarted", {data: {game: gameResource(startedGame)}})
                     } catch (e) {
                         console.log(e)
                         socket.emit("gameStartError", {error: {message: `game failed to start : ${e.message}`}})
@@ -480,77 +535,69 @@ export const userSocketListeners = asyncWrapper(async () => {
                     }
                 })
 
-                socketWrapper(socket, "endGame", async (data) => {
-                        try {
-                            data = JSON.parse(data);
+                socketWrapper(socket, "playerEndedGame", async (data) => {
+                    try {
+                        data = JSON.parse(data);
 
-                            const gameId = data.gameId;
-                            if (!gameId) {
-                                throw new Error("game id not provided")
-                            }
-
-                            const game = await dataSource.getRepository(Game).findOneOrFail({
-                                where: {
-                                    id: gameId
-                                },
-                                relations: ["gameRoom", "users", "winner"]
-                            })
-
-                            await renew(`room.${game.gameRoom.uuid}`, 'room')
-
-                            if (!game.users.some(user => user.id === verifiedUserId)) {
-                                throw new Error("user is not in the game!")
-                            }
-
-                            await endGame(game, gameStatus.FINISHED);
-
-                            socket.emit("gameEnded", {data: {game: {gameId: gameId}}})
-
-                            v1UserRoute.to(game.gameRoom.uuid).emit("playerGameEnded", {data: {game: {gameId: gameId}}})
-                        } catch (e) {
-                            socket.emit("endGameError", {error: {message: `error leaving room: ${e.message}`}})
+                        const gameId = data.gameId;
+                        if (!gameId) {
+                            throw new Error("game id not provided")
                         }
-                    })
+
+                        const game = await dataSource.getRepository(Game).findOneOrFail({
+                            where: {
+                                id: gameId
+                            },
+                            relations: ["gameRoom", "users", "winner"]
+                        })
+
+                        await renew(`room.${game.gameRoom.uuid}`, 'room')
+
+                        if (!game.users.some(user => user.id === verifiedUserId)) {
+                            throw new Error("user is not in the game!")
+                        }
+
+                        const playerEndKey = `ended.${gameId}`
+
+                        const stringUserId = verifiedUserId.toString();
+
+                        if (await redisClient.exists(playerEndKey)) {
+                            if (await redisClient.hexists(playerEndKey, stringUserId)) {
+                                throw new Error('the game for this player has already ended!')
+                            }
+
+                            await redisClient.hset(playerEndKey, stringUserId, stringUserId)
+
+                            if (redisClient.hlen(playerEndKey) === game.users.length) {
+                                await endGame(game, gameStatus.FINISHED)
+
+                                v1UserRoute.to(game.gameRoom.uuid).emit("gameEnded", {
+                                    data: {
+                                        game: gameResource(game),
+                                    }
+                                })
+
+                                return
+                            }
+                        }
+
+                        v1UserRoute.to(game.gameRoom.uuid).emit("playerGameEnded", {
+                            data: {
+                                game: gameResource(game),
+                                user: userResource(verifiedUser)
+                            }
+                        })
+                    } catch (e) {
+                        socket.emit("endGameError", {error: {message: `error leaving room: ${e.message}`}})
+                    }
+                })
+
 
                 socketWrapper(socket, 'disconnect', async () => {
                     if (redisClient.exists(socketId)) {
                         redisClient.del(socketId)
                     }
                 });
-
-
-                // socket.on('fetchQuestion', async (data) => {
-                //     try {
-                //         // await redis.get(roomId, async (err, gameId) => {
-                //         //     if (err) {
-                //         //         console.log('Error fetching data from Redis:', err)
-                //         //     } else if (gameId) {
-                //         let temp
-                //         // const gameQuestions = await getGameQuestions(1, 1)
-                //
-                //         temp = gameQuestions
-                //         console.log(temp)
-                //         fetchedQuestion = await getQuestion(1 , temp )
-                //         await temp.pop(fetchedQuestion)
-                //         console.log(fetchedQuestion)
-                //         // }
-                //         // })
-                //     } catch (error) {
-                //         console.log(`fetching question error is : ${error}`)
-                //     }
-                //
-                // })
-                // socket.on('test' , async (data) => {
-                //     try{
-                //         await submitAnswer(1 , data.game_question_id , data.answer_id ,socket.id)
-                //
-                //
-                //
-                //         }catch (error) {
-                //         console.log(`test error is  : ${error}`)
-                //     }
-                // })
-
             })
         )
     }

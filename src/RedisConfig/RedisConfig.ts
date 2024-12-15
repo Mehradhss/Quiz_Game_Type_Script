@@ -1,7 +1,9 @@
 import Redis, {RedisOptions} from "ioredis";
 import retry from "async-retry";
 import {roomExpired} from "../services/Redis/redis.room.expired.service";
-import asyncWrapper from "../middleware/wrappers/asyncWrapper";
+import {endGame} from "../services/Game/game.end.service";
+import {dataSource} from "../../database/DataSource";
+import {Game} from "../../database/entity/Game";
 
 let redisClient: Redis;
 
@@ -43,6 +45,16 @@ async function createRedisClient() {
                         const roomUuid = splitKey[1]
                         await roomExpired(roomUuid)
                         break
+                    case 'started':
+                        const gameId = splitKey[1]
+                        const game = await dataSource.getRepository(Game).findOne({
+                            where: {
+                                id: parseInt(gameId)
+                            },
+                            relations: ["gameRoom", "users", "winner"]
+                        });
+                        await endGame(game, "FINISHED")
+                        break;
                     default:
                         break
                 }

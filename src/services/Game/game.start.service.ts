@@ -4,8 +4,11 @@ import {Question} from "../../../database/entity/Question";
 import {GameQuestion} from "../../../database/entity/GameQuestion";
 import {GameSession} from "../../../database/entity/GameSession";
 import {EntityManager} from "typeorm";
+import {getRedisClient} from "../../RedisConfig/RedisConfig";
 
 export const startGame = async function (game: Game, status: string) {
+    const redisClient = getRedisClient()
+
     const gameQuestionRepository = await dataSource.getRepository(GameQuestion);
 
     const fetchedQuestions = await dataSource.getRepository(Question).createQueryBuilder('questions')
@@ -35,6 +38,8 @@ export const startGame = async function (game: Game, status: string) {
             throw e
         }
     })
+
+    redisClient.set(`started.${game.id}`, game.id, "EX", (fetchedQuestions.length * 30) + 5)
 
     return game;
 };
