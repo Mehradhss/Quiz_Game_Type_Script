@@ -15,6 +15,7 @@ export const startGame = async function (game: Game, status: string) {
         const gameQuestion = new GameQuestion();
         gameQuestion.game = game;
         gameQuestion.question = question;
+        gameQuestion.questionText = question.text;
         await gameQuestionRepository.save(gameQuestion);
     })
 
