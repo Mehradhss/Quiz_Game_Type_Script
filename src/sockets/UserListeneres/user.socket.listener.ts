@@ -26,6 +26,7 @@ import {fetchQuestion} from "../../services/Game/game.fetch.question.service";
 import {submitAnswer} from "../../services/Game/game.submit.answer.service";
 import {leaveRoom} from "../../services/Game/room.leave.service";
 import {leaveGame} from "../../services/Game/game.leave.service";
+import {endGame} from "../../services/Game/game.end.service";
 
 const gameStatus = Object.freeze({
     PENDING: 'PENDING',
@@ -478,6 +479,38 @@ export const userSocketListeners = asyncWrapper(async () => {
                         socket.emit("leaveGameError", {error: {message: `error leaving game: ${e.message}`}})
                     }
                 })
+
+                socketWrapper(socket, "endGame", async (data) => {
+                        try {
+                            data = JSON.parse(data);
+
+                            const gameId = data.gameId;
+                            if (!gameId) {
+                                throw new Error("game id not provided")
+                            }
+
+                            const game = await dataSource.getRepository(Game).findOneOrFail({
+                                where: {
+                                    id: gameId
+                                },
+                                relations: ["gameRoom", "users", "winner"]
+                            })
+
+                            await renew(`room.${game.gameRoom.uuid}`, 'room')
+
+                            if (!game.users.some(user => user.id === verifiedUserId)) {
+                                throw new Error("user is not in the game!")
+                            }
+
+                            await endGame(game, gameStatus.FINISHED);
+
+                            socket.emit("gameEnded", {data: {game: {gameId: gameId}}})
+
+                            v1UserRoute.to(game.gameRoom.uuid).emit("playerGameEnded", {data: {game: {gameId: gameId}}})
+                        } catch (e) {
+                            socket.emit("endGameError", {error: {message: `error leaving room: ${e.message}`}})
+                        }
+                    })
 
                 socketWrapper(socket, 'disconnect', async () => {
                     if (redisClient.exists(socketId)) {
