@@ -4,6 +4,9 @@ import loginService from "../../../services/Auth/login.service";
 import asyncHandler from "express-async-handler";
 import * as express from "express";
 import jwt from "jsonwebtoken";
+import {dataSource} from "../../../../database/DataSource";
+import {User} from "../../../../database/entity/User";
+import {userResource} from "../../../resources/user.resource";
 
 export class UserController {
     register = asyncHandler(async (req, res) => {
@@ -70,6 +73,23 @@ export class UserController {
                 const accessToken = createToken(decoded.userId, "access");
                 res.json({accessToken});
             })
+    })
+
+    show = asyncHandler(async (req: express.Request, res: express.Response) => {
+        const {userId} = req.params
+
+        const user = await dataSource.getRepository(User).findOneOrFail({
+            where: {
+                id: parseInt(userId)
+            },
+            relations: ["gameRooms"]
+        });
+
+        res.status(200).json({
+            data: {
+                user: userResource(user)
+            }
+        })
     })
 }
 
