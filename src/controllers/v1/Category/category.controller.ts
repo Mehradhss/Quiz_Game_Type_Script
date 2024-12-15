@@ -1,6 +1,6 @@
 import asyncHandler from "express-async-handler";
-import {dataSource} from "../../../database/DataSource";
-import {Category} from "../../../database/entity/Category";
+import {dataSource} from "../../../../database/DataSource";
+import {Category} from "../../../../database/entity/Category";
 
 export class CategoryController {
     index = asyncHandler(async (req, res) => {

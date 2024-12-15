@@ -1,8 +1,8 @@
 import asyncHandler from "express-async-handler";
 import * as express from "express";
-import {dataSource} from "../../../database/DataSource";
-import {User} from "../../../database/entity/User";
-import {leaderboardResource} from "../../resources/leaderboard.resource";
+import {dataSource} from "../../../../database/DataSource";
+import {User} from "../../../../database/entity/User";
+import {leaderboardResource} from "../../../resources/leaderboard.resource";
 
 export class LeaderboardController {
     invoke = asyncHandler(async (req: express.Request, res: express.Response) => {
