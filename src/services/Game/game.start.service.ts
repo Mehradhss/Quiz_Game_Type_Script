@@ -2,6 +2,8 @@ import {Game} from "../../../database/entity/Game";
 import {dataSource} from "../../../database/DataSource";
 import {Question} from "../../../database/entity/Question";
 import {GameQuestion} from "../../../database/entity/GameQuestion";
+import {GameSession} from "../../../database/entity/GameSession";
+import {EntityManager} from "typeorm";
 
 export const startGame = async function (game: Game, status: string) {
     const gameQuestionRepository = await dataSource.getRepository(GameQuestion);
@@ -21,7 +23,18 @@ export const startGame = async function (game: Game, status: string) {
 
     game.status = status;
 
-    await dataSource.manager.save(game);
+    const gameSession = new GameSession();
+
+    gameSession.game = game;
+
+    await dataSource.transaction(async (transactionalEntityManager: EntityManager) => {
+        try {
+            await transactionalEntityManager.save(game);
+            await transactionalEntityManager.save(gameSession);
+        }catch (e) {
+            throw e
+        }
+    })
 
     return game;
 };
