@@ -8,9 +8,6 @@ export class GameQuestion {
     @PrimaryGeneratedColumn()
     id: number
 
-    @Column()
-    is_fetched: boolean
-
     @ManyToOne(() => Game, (game) => game.gameQuestions)
     game: Game
 

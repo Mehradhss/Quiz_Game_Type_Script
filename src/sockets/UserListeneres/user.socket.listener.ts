@@ -22,6 +22,7 @@ import {release} from "node:os";
 import {start} from "node:repl";
 import {startGame} from "../../services/Game/game.start.service";
 import {User} from "../../../database/entity/User";
+import {fetchQuestion} from "../../services/Game/game.fetch.question.service";
 
 const gameStatus = Object.freeze({
     PENDING: 'PENDING',
@@ -222,6 +223,7 @@ export const userSocketListeners = asyncWrapper(async () => {
                         socket.emit('gameCreationError', {error: {message: `unable to create game : ${e.message}`}});
                     }
                 })
+
                 socketWrapper(socket, 'readyToStart', async (data) => {
                     try {
                         data = JSON.parse(data);
@@ -272,8 +274,8 @@ export const userSocketListeners = asyncWrapper(async () => {
 
                         await renew(`room.${roomId}`, 'room')
 
-                        v1UserRoute.to(roomId).emit('roomPlayerReady', {message: {user: readiedUpUser}})
-                        socket.emit("playerReady", {message: {user: readiedUpUser}})
+                        v1UserRoute.to(roomId).emit('roomPlayerReady', {data: {user: readiedUpUser}})
+                        socket.emit("playerReady", {data: {user: readiedUpUser}})
                     } catch (err) {
                         socket.emit('readyToStartError', {error: {message: `ready up failed to : ${err.message}`}})
                     }
@@ -322,7 +324,7 @@ export const userSocketListeners = asyncWrapper(async () => {
 
                         const started = await startGame(game, gameStatus.STARTED)
 
-                        v1UserRoute.to(roomId).emit("gameStarted", {message: {game: started}})
+                        v1UserRoute.to(roomId).emit("gameStarted", {data: {game: started}})
                     } catch (e) {
                         console.log(e)
                         socket.emit("gameStartError", {error: {message: `game failed to start : ${e.message}`}})
@@ -331,10 +333,82 @@ export const userSocketListeners = asyncWrapper(async () => {
 
                 socketWrapper(socket, 'fetchQuestion', async (data) => {
                     try {
+                        data = JSON.parse(data);
 
+                        const roomId = data.roomId
+                        if (!roomId) {
+                            throw new Error("room id not provided")
+                        }
+                        await renew(`room.${roomId}`, 'room')
+
+                        const gameId = data.gameId;
+                        if (!gameId) {
+                            throw new Error("game id not provided")
+                        }
+                        const game = await dataSource.getRepository(Game).findOneOrFail({
+                            where: {
+                                id: gameId
+                            },
+                            relations: ["users", "gameQuestions", "category"]
+                        });
+
+                        if (game.users.length < 2) {
+                            throw new Error("not enough players to continue the game !")
+                        }
+
+                        if (game.status != gameStatus.STARTED) {
+                            if (game.status === gameStatus.FINISHED) {
+                                socket.emit("gameFinished", {data: {message: "this game is finished"}})
+
+                                return
+                            }
+
+                            throw new Error("game has not started yet");
+                        }
+
+                        const fetchedGameQuestion = await fetchQuestion(game, verifiedUserId)
+
+                        if (!fetchedGameQuestion) {
+                            socket.emit("gameFinished", {
+                                data: {
+                                    message: "game finished",
+                                    user: verifiedUser
+                                }
+                            })
+
+                            v1UserRoute.to(roomId).emit("gameFinished", {
+                                data: {
+                                    message: "game finished",
+                                    user: verifiedUser
+                                }
+                            })
+
+                            throw new Error("all questions fetched!")
+                        }
+
+                        socket.emit("questionFetched", {data: {question: fetchedGameQuestion}})
                     } catch (e) {
                         console.log(e)
                         socket.emit("fetchQuestionError", {error: {message: `fetch question failed : ${e.message}`}})
+                    }
+                })
+
+                socketWrapper(socket, "submitAnswer", async (data) => {
+                    try {
+                        data = JSON.parse(data);
+
+                        const roomId = data.roomId
+                        if (!roomId) {
+                            throw new Error("room id not provided")
+                        }
+                        await renew()
+
+                        const gameId = data.gameId;
+                        if (!gameId) {
+                            throw new Error("game id not provided")
+                        }
+                    }catch (e) {
+
                     }
                 })
 
