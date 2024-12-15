@@ -5,12 +5,13 @@ import {
     ManyToOne,
     OneToMany,
     UpdateDateColumn,
-    CreateDateColumn, ManyToMany
+    CreateDateColumn, ManyToMany, OneToOne
 } from "typeorm"
 import {Category} from "./Category";
 import {GameQuestion} from "./GameQuestion";
 import {GameRoom} from "./GameRoom";
 import {User} from "./User";
+import {GameSession} from "./GameSession";
 
 @Entity()
 export class Game {
@@ -29,8 +30,8 @@ export class Game {
     @ManyToOne(() => Category, (category) => category.games)
     category: Category
 
-    @ManyToMany(() => User , (user) => user.games)
-    users : User[]
+    @ManyToMany(() => User, (user) => user.games)
+    users: User[]
 
     @OneToMany(() => GameQuestion, (gameQuestion) => gameQuestion.game)
     gameQuestions: GameQuestion[]
@@ -40,4 +41,7 @@ export class Game {
 
     @ManyToOne(() => User, (user) => user.wonGames)
     winner: User
+
+    @OneToOne(() => GameSession, (session) => session.game)
+    session: GameSession
 }
