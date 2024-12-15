@@ -8,6 +8,9 @@ export class GameQuestion {
     @PrimaryGeneratedColumn()
     id: number
 
+    @Column({default : null})
+    questionText: string
+
     @ManyToOne(() => Game, (game) => game.gameQuestions)
     game: Game
 
