@@ -23,6 +23,8 @@ import {start} from "node:repl";
 import {startGame} from "../../services/Game/game.start.service";
 import {User} from "../../../database/entity/User";
 import {fetchQuestion} from "../../services/Game/game.fetch.question.service";
+import {submitAnswer} from "../../services/Game/game.submit.answer.service";
+import {leaveRoom} from "../../services/Game/room.leave.service";
 
 const gameStatus = Object.freeze({
     PENDING: 'PENDING',
@@ -401,15 +403,48 @@ export const userSocketListeners = asyncWrapper(async () => {
                         if (!roomId) {
                             throw new Error("room id not provided")
                         }
-                        await renew()
+                        await renew(`room.${roomId}`, 'room')
 
                         const gameId = data.gameId;
                         if (!gameId) {
                             throw new Error("game id not provided")
                         }
-                    }catch (e) {
 
+                        const answer = data.answer
+
+                        await submitAnswer(verifiedUser, answer)
+
+                        socket.emit("answerSubmitted", {data: {answer: answer}})
+
+                    } catch (e) {
+                        socket.emit("submitAnswerError", {error: {message: `an error accord during submitting answer : ${e.message}`}})
                     }
+                })
+
+                socketWrapper(socket, "leaveGameRoom", async (data) => {
+                    try {
+                        data = JSON.parse(data);
+
+                        const roomId = data.roomId
+                        if (!roomId) {
+                            throw new Error("room id not provided")
+                        }
+                        await renew(`room.${roomId}`, 'room')
+
+                        if (!verifiedUser.gameRooms.some((gameRoom) => gameRoom.uuid === roomId)) {
+                            throw new Error("user is not in the room!")
+                        }
+
+                        await leaveRoom(roomId, verifiedUserId, gameStatus.FINISHED)
+
+                        socket.emit("leavedGame", {data: {roomId: roomId}})
+                    } catch (e) {
+                        socket.emit("leaveGameRoomError", {error: {message: `error leaving room: ${e.message}`}})
+                    }
+                });
+
+                socketWrapper(socket, "leaveGame", async (data) => {
+
                 })
 
                 socketWrapper(socket, 'disconnect', async () => {
