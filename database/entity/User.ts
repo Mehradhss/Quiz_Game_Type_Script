@@ -2,7 +2,6 @@ import {
     Entity,
     Column,
     PrimaryGeneratedColumn,
-    ManyToOne,
     OneToMany,
     ManyToMany,
     UpdateDateColumn,
@@ -11,7 +10,6 @@ import {
 } from "typeorm"
 import {QuestionResult} from "./QuestionResult";
 import {Game} from "./Game";
-import {Leaderboard} from "./Leaderboard";
 import {GameRoom} from "./GameRoom";
 
 
@@ -41,9 +39,6 @@ export class User {
 
     @OneToMany(() => QuestionResult, (questionResult) => questionResult.user, {})
     questionResults: QuestionResult[]
-
-    @ManyToOne(() => Leaderboard, (leaderBoard) => leaderBoard.users, {})
-    leaderBoard: Leaderboard
 
     @OneToMany(() => Game, (game) => game.winner, {})
     wonGames: Game[]

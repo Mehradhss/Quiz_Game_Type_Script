@@ -1,17 +1,13 @@
-import {Entity, Column, PrimaryGeneratedColumn, ManyToOne, OneToMany, CreateDateColumn, UpdateDateColumn} from "typeorm"
-import {User} from "./User";
+import {Entity, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn} from "typeorm"
 
 @Entity()
-export class Leaderboard{
+export class Leaderboard {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @CreateDateColumn({ type: "timestamp", default: () => "CURRENT_TIMESTAMP(6)" })
+    @CreateDateColumn({type: "timestamp", default: () => "CURRENT_TIMESTAMP(6)"})
     public created_at: Date;
 
-    @UpdateDateColumn({ type: "timestamp", default: () => "CURRENT_TIMESTAMP(6)", onUpdate: "CURRENT_TIMESTAMP(6)" })
+    @UpdateDateColumn({type: "timestamp", default: () => "CURRENT_TIMESTAMP(6)", onUpdate: "CURRENT_TIMESTAMP(6)"})
     public updated_at: Date;
-
-    @OneToMany((type) => User, (user) => user.leaderBoard)
-    users: User[]
 }
