@@ -25,6 +25,7 @@ import {User} from "../../../database/entity/User";
 import {fetchQuestion} from "../../services/Game/game.fetch.question.service";
 import {submitAnswer} from "../../services/Game/game.submit.answer.service";
 import {leaveRoom} from "../../services/Game/room.leave.service";
+import {leaveGame} from "../../services/Game/game.leave.service";
 
 const gameStatus = Object.freeze({
     PENDING: 'PENDING',
@@ -444,7 +445,38 @@ export const userSocketListeners = asyncWrapper(async () => {
                 });
 
                 socketWrapper(socket, "leaveGame", async (data) => {
+                    try {
+                        data = JSON.parse(data);
 
+                        const roomId = data.roomId
+                        if (!roomId) {
+                            throw new Error("room id not provided")
+                        }
+                        await renew(`room.${roomId}`, 'room')
+
+                        const gameId = data.gameId;
+                        if (!gameId) {
+                            throw new Error("game id not provided")
+                        }
+
+                        const game = await dataSource.getRepository(Game).findOneOrFail({
+                            where: {
+                                id: gameId
+                            },
+                            relations: ["users"]
+                        })
+
+                        if (!game.users.some(user => user.id === verifiedUserId)) {
+                            throw new Error("user is not in the game!")
+                        }
+
+                        await leaveGame(game, verifiedUserId);
+
+                        socket.emit("leavedGame", {data: {game: {gameId: gameId}}})
+
+                    } catch (e) {
+                        socket.emit("leaveGameError", {error: {message: `error leaving game: ${e.message}`}})
+                    }
                 })
 
                 socketWrapper(socket, 'disconnect', async () => {
