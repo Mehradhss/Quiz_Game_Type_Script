@@ -12,7 +12,7 @@ export class GameRoomController {
             where: {
                 id: parseInt(gameRoomId)
             },
-            relations: ["games", "games.session"]
+            relations: ["games", "games.session" , "users"]
         });
 
         res.json({

@@ -8,19 +8,21 @@ import {User} from "../../../database/entity/User";
 export const submitAnswer = asyncWrapper(async (user: User, answer: any) => {
     const newQuestionResult = new QuestionResult()
 
-    newQuestionResult.gameQuestion = await dataSource.getRepository(GameQuestion).findOneOrFail({
+    const gameQuestion = newQuestionResult.gameQuestion = await dataSource.getRepository(GameQuestion).findOneOrFail({
         where: {
             id: answer?.gameQuestionId
         }
     });
 
-    newQuestionResult.answer = await dataSource.getRepository(Answer).findOneOrFail({
+    const foundAnswer = newQuestionResult.answer = await dataSource.getRepository(Answer).findOneOrFail({
         where: {
-            id: answer.id
+            id: answer?.id
         }
     });
 
     newQuestionResult.user = user;
+    newQuestionResult.gameQuestion = gameQuestion
+    newQuestionResult.answer = foundAnswer
 
     await dataSource.manager.save(newQuestionResult);
 })

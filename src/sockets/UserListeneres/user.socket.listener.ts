@@ -26,6 +26,8 @@ import {leaveGame} from "../../services/Game/game.leave.service";
 import {endGame} from "../../services/Game/game.end.service";
 import {gameResource} from "../../resources/game.resource";
 import {userResource} from "../../resources/user.resource";
+import {gameRoomResource} from "../../resources/game.room.resource";
+import {answerResource} from "../../resources/answer.resource";
 
 const gameStatus = Object.freeze({
     PENDING: 'PENDING',
@@ -81,67 +83,63 @@ export const userSocketListeners = asyncWrapper(async () => {
 
                         socket.emit('gameRoomCreated', {roomId: newRoom.uuid})
                     } catch (e) {
-                        socket.emit("createGameRoomError", {error: {message: `unable to create room ${e.message}`}})
+                        socket.emit("createGameRoomError", {error: {message: `unable to create room : ${e.message}`}})
+
+                        console.log(e)
                     }
                 })
 
                 socketWrapper(socket, 'joinGameRoom', async (data) => {
-                    data = JSON.parse(data)
+                    try {
+                        data = JSON.parse(data)
 
-                    const roomId = data.roomId
-                    if (!roomId) {
-                        socket.emit('gameRoomJoinError', {error: {message: "room id not found"}});
-
-                        return;
-                    }
-
-                    const gameRoom = await dataSource.getRepository(GameRoom).findOneOrFail({
-                        where: {
-                            uuid: roomId
-                        },
-                        relations: ['users']
-                    });
-
-                    const isVerifiedUserJoined = await isUserJoined(gameRoom, verifiedUserId);
-                    if (gameRoom && gameRoom.users.length < 2) {
-                        try {
-                            if (isVerifiedUserJoined) {
-                                socket.emit('gameRoomJoinError', {error: {message: "user already joined"}});
-
-                                return
-                            }
-
-                            await joinRoom(socket, roomId, verifiedUserId);
-
-                            await renew(`room.${gameRoom.uuid}`, 'room')
-                        } catch (e) {
-                            socket.emit('gameRoomJoinError', {error: {message: `unable to join game : ${e.message}`}});
-
-                            return
+                        const roomId = data.roomId
+                        if (!roomId) {
+                            throw new Error("room id not found");
                         }
 
-                        socket.emit('gameRoomJoined', {roomId: roomId});
+                        const gameRoom = await dataSource.getRepository(GameRoom).findOne({
+                            where: {
+                                uuid: roomId
+                            },
+                            relations: ['users']
+                        });
+
+                        if (!gameRoom) {
+                            throw new Error("room not found")
+                        }
+
+                        const isVerifiedUserJoined = await isUserJoined(gameRoom, verifiedUserId);
+
+                        if (isVerifiedUserJoined) {
+                            throw new Error("user already joined")
+                        }
+
+                        if (gameRoom && gameRoom.users.length < 2) {
+                            throw new Error("room is full")
+                        }
+                        await joinRoom(socket, roomId, verifiedUserId);
+
+                        await renew(`room.${gameRoom.uuid}`, 'room')
+
+                        socket.emit('gameRoomJoined', {room: gameRoomResource(gameRoom)});
                         console.log('User joined game with room ID:', roomId);
 
-                        return
-                    }
 
-                    socket.emit('gameRoomJoinError', {error: {message: "room is full"}});
-                    console.log('room is full')
+                    } catch (e) {
+                        socket.emit('gameRoomJoinError', {error: {message: `join room failed : ${e.message}`}});
+
+                        console.log(e)
+                    }
                 })
 
                 socketWrapper(socket, 'searchForGameRoom', async () => {
                     try {
-                        const pendingGameRoom = await getJoinAbleGameRoom(verifiedUserId)
+                        const joinAbleGameRoom = await getJoinAbleGameRoom(verifiedUserId)
 
-                        const pendingGameRoomData = {
-                            id: pendingGameRoom.id,
-                            roomId: pendingGameRoom.uuid
-                        }
+                        await renew(`room.${joinAbleGameRoom.uuid}`, 'room')
 
-                        await renew(`room.${pendingGameRoom.uuid}`, 'room')
-
-                        socket.emit('searchForGameSuccess', {data: pendingGameRoomData});
+                        socket.emit('searchForGameSuccess', {data: gameRoomResource(joinAbleGameRoom)});
                     } catch (e) {
                         socket.emit('searchForGameError', {error: {message: "unable to search for game", e}});
                     }
@@ -207,7 +205,11 @@ export const userSocketListeners = asyncWrapper(async () => {
                             throw new Error('room not found');
                         }
 
-                        if (socketRoom.size < 2 || gameRoom.users.length < 2) {
+                        if (socketRoom.size < 2) {
+                            throw new Error("a user disconnected")
+                        }
+
+                        if (gameRoom.users.length < 2) {
                             throw new Error("not enough players");
                         }
 
@@ -267,18 +269,11 @@ export const userSocketListeners = asyncWrapper(async () => {
 
                         await redisClient.hset(playerReadyKey, stringUserId, stringUserId)
 
-                        const readiedUpUser = await dataSource.getRepository(User).findOneOrFail({
-                            where: {
-                                id: verifiedUserId
-                            }
-                        })
-
                         await renew(playerReadyKey, "game")
 
                         await renew(`room.${roomId}`, 'room')
 
-                        v1UserRoute.to(roomId).emit('roomPlayerReady', {data: {user: readiedUpUser}})
-                        socket.emit("playerReady", {data: {user: readiedUpUser}})
+                        v1UserRoute.to(roomId).emit('playerReady', {data: {user: userResource(verifiedUser)}})
                     } catch (err) {
                         socket.emit('readyToStartError', {error: {message: `ready up failed to : ${err.message}`}})
                     }
@@ -322,20 +317,15 @@ export const userSocketListeners = asyncWrapper(async () => {
 
                         await redisClient.hdel(playerReadyKey, stringUserId)
 
-                        const player = await dataSource.getRepository(User).findOneOrFail({
-                            where: {
-                                id: verifiedUserId
-                            }
-                        })
-
                         await renew(playerReadyKey, "game")
 
                         await renew(`room.${roomId}`, 'room')
 
-                        v1UserRoute.to(roomId).emit('roomPlayerReady', {data: {user: player}})
-                        socket.emit("playerUnReady", {data: {user: userResource(player)}})
+                        v1UserRoute.to(roomId).emit('playerUnready', {data: {user: userResource(verifiedUser)}})
                     } catch (err) {
                         socket.emit('unreadyToStartError', {error: {message: `ready up failed to : ${err.message}`}})
+
+                        console.log(err)
                     }
 
                 })
@@ -404,15 +394,22 @@ export const userSocketListeners = asyncWrapper(async () => {
                         if (!gameId) {
                             throw new Error("game id not provided")
                         }
-                        const game = await dataSource.getRepository(Game).findOneOrFail({
+                        const game = await dataSource.getRepository(Game).findOne({
                             where: {
                                 id: gameId
                             },
                             relations: ["users", "gameQuestions", "category"]
                         });
 
+                        if (!game) {
+                            throw new Error("game not found");
+                        }
+                        if (game.status === gameStatus.FINISHED) {
+                            throw new Error("game is finished");
+                        }
+
                         if (game.users.length < 2) {
-                            throw new Error("not enough players to continue the game !")
+                            throw new Error("not enough players to continue the game !");
                         }
 
                         if (game.status != gameStatus.STARTED) {
@@ -467,14 +464,28 @@ export const userSocketListeners = asyncWrapper(async () => {
                             throw new Error("game id not provided")
                         }
 
-                        const answer = data.answer
+                        const game = await dataSource.getRepository(Game).findOne({
+                            where : {
+                                id : gameId
+                            }
+                        })
+                        if (!game) {
+                            throw new Error("game not found")
+                        }
+                        if (game.status === gameStatus.FINISHED) {
+                            throw new Error("game is finished")
+                        }
+
+                        const answer = data.answer;
 
                         await submitAnswer(verifiedUser, answer)
 
-                        socket.emit("answerSubmitted", {data: {answer: answer}})
+                        socket.emit("answerSubmitted", {data: {answer: answerResource(answer)}})
 
                     } catch (e) {
                         socket.emit("submitAnswerError", {error: {message: `an error accord during submitting answer : ${e.message}`}})
+
+                        console.log(e)
                     }
                 })
 
@@ -592,6 +603,45 @@ export const userSocketListeners = asyncWrapper(async () => {
                     }
                 })
 
+                socketWrapper(socket, "endGame", async (data) => {
+                    try {
+                        data = JSON.parse(data);
+
+                        const gameId = data.gameId;
+                        if (!gameId) {
+                            throw new Error("game id not provided")
+                        }
+
+                        const game = await dataSource.getRepository(Game).findOneOrFail({
+                            where: {
+                                id: gameId
+                            },
+                            relations: ["gameRoom", "users", "winner"]
+                        })
+
+                        await renew(`room.${game.gameRoom.uuid}`, 'room')
+
+                        if (!game.users.some(user => user.id === verifiedUserId)) {
+                            throw new Error("user is not in the game!")
+                        }
+
+                        if (game.status === gameStatus.FINISHED) {
+                            throw new Error("game is already finished")
+                        }
+
+                        await endGame(game, gameStatus.FINISHED);
+
+                        v1UserRoute.to(game.gameRoom.uuid).emit("gameEnded", {
+                            data: {
+                                game: gameResource(game),
+                            }
+                        })
+
+                    } catch
+                        (e) {
+                        socket.emit("endGameError", {error: {message: `error leaving room: ${e.message}`}})
+                    }
+                })
 
                 socketWrapper(socket, 'disconnect', async () => {
                     if (redisClient.exists(socketId)) {
