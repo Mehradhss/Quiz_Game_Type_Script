@@ -102,7 +102,7 @@ export const userSocketListeners = asyncWrapper(async () => {
                             where: {
                                 uuid: roomId
                             },
-                            relations: ['users' , "games"]
+                            relations: ['users', "games"]
                         });
 
                         if (!gameRoom) {
@@ -224,7 +224,9 @@ export const userSocketListeners = asyncWrapper(async () => {
 
                         await renew(`room.${roomId}`, 'room')
 
-                        const newGame = await createGame(gameRoom, gameStatus.PENDING, categoryId)
+                        const difficultyMultiplier = parseInt(data.difficulty ?? "1")
+
+                        const newGame = await createGame(gameRoom, gameStatus.PENDING, categoryId, difficultyMultiplier)
 
                         v1UserRoute.to(gameRoom.uuid).emit('gameCreated', {data: {game: newGame}})
                     } catch (e) {
@@ -376,7 +378,12 @@ export const userSocketListeners = asyncWrapper(async () => {
 
                         const startedGame = await startGame(game, gameStatus.STARTED)
 
-                        v1UserRoute.to(roomId).emit("gameStarted", {data: {game: gameResource(startedGame)}})
+                        v1UserRoute.to(roomId).emit("gameStarted", {
+                            data: {
+                                game: gameResource(startedGame.game),
+                                gameTime: startedGame.gameTime
+                            }
+                        })
                     } catch (e) {
                         console.log(e)
                         socket.emit("gameStartError", {error: {message: `game failed to start : ${e.message}`}})
@@ -468,8 +475,8 @@ export const userSocketListeners = asyncWrapper(async () => {
                         }
 
                         const game = await dataSource.getRepository(Game).findOne({
-                            where : {
-                                id : gameId
+                            where: {
+                                id: gameId
                             }
                         })
                         if (!game) {
@@ -550,7 +557,7 @@ export const userSocketListeners = asyncWrapper(async () => {
                             throw new Error("user is not in the game!")
                         }
 
-                        if (game.status != gameStatus.STARTED){
+                        if (game.status != gameStatus.STARTED) {
                             throw new Error("cannot leave a game that has not been started yet!")
                         }
 
@@ -586,7 +593,7 @@ export const userSocketListeners = asyncWrapper(async () => {
                         }
 
                         if (game.status === gameStatus.FINISHED) {
-                           throw new Error("game is already finished")
+                            throw new Error("game is already finished")
                         }
 
                         const playerEndKey = `ended.${gameId}`

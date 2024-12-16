@@ -4,7 +4,7 @@ import {User} from "../../../database/entity/User";
 import {GameRoom} from "../../../database/entity/GameRoom";
 import {Category} from "../../../database/entity/Category";
 
-export default async function createGame(gameRoom: GameRoom, status, categoryId) {
+export default async function createGame(gameRoom: GameRoom, status, categoryId, difficulty: number) {
     try {
         const roomUsers = gameRoom.users
 
@@ -15,8 +15,8 @@ export default async function createGame(gameRoom: GameRoom, status, categoryId)
         })
         const newGame = new Game()
         newGame.status = status
-
         newGame.category = category
+        newGame.difficulty = difficulty
 
         await roomUsers.forEach((user: User) => {
             user.games.push(newGame)

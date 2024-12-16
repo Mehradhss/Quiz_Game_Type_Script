@@ -21,6 +21,9 @@ export class Game {
     @Column({nullable: false})
     status: string
 
+    @Column({type: "int", nullable: true, default: 1})
+    difficulty: number
+
     @CreateDateColumn({type: "timestamp", default: () => "CURRENT_TIMESTAMP(6)"})
     public created_at: Date;
 

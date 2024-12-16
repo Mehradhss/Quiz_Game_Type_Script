@@ -6,6 +6,7 @@ export const gameResource = (game: Game) => {
     return {
         id: game.id,
         status: game.status,
+        difficulty: game.difficulty ?? 1,
         session: game.session ? gameSessionResource(game.session) : null,
         winner: game.winner ? userResource(game.winner) : null
     }

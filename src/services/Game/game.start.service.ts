@@ -34,12 +34,15 @@ export const startGame = async function (game: Game, status: string) {
         try {
             await transactionalEntityManager.save(game);
             await transactionalEntityManager.save(gameSession);
-        }catch (e) {
+        } catch (e) {
             throw e
         }
     })
 
-    redisClient.set(`started.${game.id}`, game.id, "EX", (fetchedQuestions.length * 30) + 5)
+    const difficultyMultiplier = game.difficulty ?? 1
+    const gameTime = fetchedQuestions.length * 30 * difficultyMultiplier;
 
-    return game;
+    redisClient.set(`started.${game.id}`, game.id, "EX", gameTime + 5)
+
+    return {game : game , gameTime : gameTime};
 };
