@@ -102,11 +102,15 @@ export const userSocketListeners = asyncWrapper(async () => {
                             where: {
                                 uuid: roomId
                             },
-                            relations: ['users']
+                            relations: ['users' , "games"]
                         });
 
                         if (!gameRoom) {
                             throw new Error("room not found")
+                        }
+
+                        if (gameRoom.users.length > 2) {
+                            throw new Error("room is full")
                         }
 
                         const isVerifiedUserJoined = await isUserJoined(gameRoom, verifiedUserId);
@@ -115,14 +119,11 @@ export const userSocketListeners = asyncWrapper(async () => {
                             throw new Error("user already joined")
                         }
 
-                        if (gameRoom && gameRoom.users.length < 2) {
-                            throw new Error("room is full")
-                        }
-                        await joinRoom(socket, roomId, verifiedUserId);
+                        const joinedGameRoom = await joinRoom(socket, roomId, verifiedUserId);
 
                         await renew(`room.${gameRoom.uuid}`, 'room')
 
-                        socket.emit('gameRoomJoined', {room: gameRoomResource(gameRoom)});
+                        socket.emit('gameRoomJoined', {room: gameRoomResource(joinedGameRoom)});
                         console.log('User joined game with room ID:', roomId);
 
 
@@ -175,6 +176,8 @@ export const userSocketListeners = asyncWrapper(async () => {
                         });
                     } catch (e) {
                         socket.emit('selectCategoryError', {error: {message: `unable to select category : ${e}`}});
+
+                        console.log(e)
                     }
                 })
 
@@ -497,17 +500,27 @@ export const userSocketListeners = asyncWrapper(async () => {
                         if (!roomId) {
                             throw new Error("room id not provided")
                         }
+                        const gameRoom = await dataSource.getRepository(GameRoom).findOneOrFail({
+                            where: {
+                                uuid: roomId
+                            },
+                            relations: ["users", "games", "games.users"]
+                        });
                         await renew(`room.${roomId}`, 'room')
 
-                        if (!verifiedUser.gameRooms.some((gameRoom) => gameRoom.uuid === roomId)) {
+                        const isVerifiedUserJoined = await isUserJoined(gameRoom, verifiedUserId);
+
+                        if (!isVerifiedUserJoined) {
                             throw new Error("user is not in the room!")
                         }
 
-                        await leaveRoom(roomId, verifiedUserId, gameStatus.FINISHED)
+                        const leavedGameRoom = await leaveRoom(gameRoom, verifiedUserId, gameStatus.FINISHED)
 
-                        socket.emit("leavedGame", {data: {roomId: roomId}})
+                        v1UserRoute.to(roomId).emit("leavedGameRoom", {data: {room: gameRoomResource(gameRoom)}})
                     } catch (e) {
                         socket.emit("leaveGameRoomError", {error: {message: `error leaving room: ${e.message}`}})
+
+                        console.log(e)
                     }
                 });
 
@@ -535,6 +548,10 @@ export const userSocketListeners = asyncWrapper(async () => {
 
                         if (!game.users.some(user => user.id === verifiedUserId)) {
                             throw new Error("user is not in the game!")
+                        }
+
+                        if (game.status != gameStatus.STARTED){
+                            throw new Error("cannot leave a game that has not been started yet!")
                         }
 
                         await leaveGame(game, verifiedUserId);
@@ -565,7 +582,11 @@ export const userSocketListeners = asyncWrapper(async () => {
                         await renew(`room.${game.gameRoom.uuid}`, 'room')
 
                         if (!game.users.some(user => user.id === verifiedUserId)) {
-                            throw new Error("user is not in the game!")
+                            throw new Error("user is not in the game!");
+                        }
+
+                        if (game.status === gameStatus.FINISHED) {
+                           throw new Error("game is already finished")
                         }
 
                         const playerEndKey = `ended.${gameId}`
@@ -576,20 +597,20 @@ export const userSocketListeners = asyncWrapper(async () => {
                             if (await redisClient.hexists(playerEndKey, stringUserId)) {
                                 throw new Error('the game for this player has already ended!')
                             }
+                        }
 
-                            await redisClient.hset(playerEndKey, stringUserId, stringUserId)
+                        await redisClient.hset(playerEndKey, stringUserId, stringUserId)
 
-                            if (await redisClient.hlen(playerEndKey) === game.users.length) {
-                                await endGame(game, gameStatus.FINISHED)
+                        if (await redisClient.hlen(playerEndKey) === game.users.length) {
+                            await endGame(game, gameStatus.FINISHED)
 
-                                v1UserRoute.to(game.gameRoom.uuid).emit("gameEnded", {
-                                    data: {
-                                        game: gameResource(game),
-                                    }
-                                })
+                            v1UserRoute.to(game.gameRoom.uuid).emit("gameEnded", {
+                                data: {
+                                    game: gameResource(game),
+                                }
+                            })
 
-                                return
-                            }
+                            return
                         }
 
                         v1UserRoute.to(game.gameRoom.uuid).emit("playerGameEnded", {
@@ -600,6 +621,8 @@ export const userSocketListeners = asyncWrapper(async () => {
                         })
                     } catch (e) {
                         socket.emit("endGameError", {error: {message: `error leaving room: ${e.message}`}})
+
+                        console.log(e)
                     }
                 })
 

@@ -2,31 +2,38 @@ import {Game} from "../../../database/entity/Game";
 import {dataSource} from "../../../database/DataSource";
 import {QuestionResult} from "../../../database/entity/QuestionResult";
 import {User} from "../../../database/entity/User";
+import asyncWrapper from "../../middleware/wrappers/asyncWrapper";
 
 export const endGame = async (game: Game, finishStatus: string) => {
-    let winner: User;
+    try {
+        let winner: User = game.users[0];
 
-    let winnerPoints = 0
+        let winnerPoints = 0
 
-    await game.users.forEach(async (user) => {
-        const userPoints = await dataSource.getRepository(QuestionResult)
-            .createQueryBuilder('questionResults')
-            .leftJoin('questionResults.answer', 'answer')
-            .where("questionResults.userId = :userId" , {userId : user.id})
-            .andWhere("questionResults.gameId = :gameId" , {gameId : game.id})
-            .andWhere("answer.is_correct = :isCorrect" , {isCorrect : true})
-            .getCount();
+        await game.users.forEach(async (user) => {
+            const userPoints = await dataSource.getRepository(QuestionResult)
+                .createQueryBuilder('questionResults')
+                .leftJoin('questionResults.answer', 'answer')
+                .leftJoin('questionResults.gameQuestion' , 'gameQuestion')
+                .where("questionResults.userId = :userId", {userId: user.id})
+                .andWhere("gameQuestion.gameId = :gameId", {gameId: game.id})
+                .andWhere("answer.is_correct = :isCorrect", {isCorrect: true})
+                .getCount();
 
-        user.total_points += userPoints
+            user.total_points += userPoints
 
-        if (userPoints > winnerPoints) {
-            winner = user
-            winnerPoints = userPoints
-        }
-    })
+            if (userPoints > winnerPoints) {
+                winner = user
+                winnerPoints = userPoints
+            }
+        })
 
-    game.status = finishStatus;
-    game.winner = winner;
+        game.status = finishStatus;
+        game.winner = winner;
 
-    await dataSource.manager.save(game)
+        await dataSource.manager.save(game)
+
+    }catch (e) {
+        throw e
+    }
 }

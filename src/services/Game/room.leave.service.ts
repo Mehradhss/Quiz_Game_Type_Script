@@ -2,26 +2,29 @@ import asyncWrapper from "../../middleware/wrappers/asyncWrapper";
 import {dataSource} from "../../../database/DataSource";
 import {GameRoom} from "../../../database/entity/GameRoom";
 import {User} from "../../../database/entity/User";
+import {endGame} from "./game.end.service";
 
-export const leaveRoom = asyncWrapper(async (roomUuid: string, userId, finishedStatus) => {
-    const gameRoomRepository = await dataSource.getRepository(GameRoom);
+export const leaveRoom = async (gameRoom: GameRoom, userId, finishedStatus) => {
+    try {
+        const gameRoomRepository = await dataSource.getRepository(GameRoom);
 
-    const gameRoom = await gameRoomRepository.findOneOrFail({
-        where: {
-            uuid: roomUuid
-        },
-        relations: ["users", "games", "games.users"]
-    });
+        gameRoom.users = gameRoom.users.filter((gameRoomUser) => {
+            return gameRoomUser.id != userId
+        })
 
-    gameRoom.users.filter((gameRoomUser) => {
-        return gameRoomUser.id != userId
-    })
+        await gameRoom.games.forEach(async (game) => {
+            if (game.users.some(gameUser => gameUser.id = userId)) {
+                if (game.status === "STARTED") {
+                    await endGame(game, finishedStatus);
+                }
+            }
+        })
 
-    gameRoom.games.forEach((game) => {
-        if (game.users.some(gameUser => gameUser.id = userId)) {
-            game.status = finishedStatus;
-        }
-    })
+        await dataSource.manager.save(gameRoom)
 
-    await dataSource.manager.save(gameRoom)
-})
+        return gameRoom
+
+    } catch (e) {
+        throw e
+    }
+}
