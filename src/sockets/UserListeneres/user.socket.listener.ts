@@ -660,8 +660,7 @@ export const userSocketListeners = asyncWrapper(async () => {
                             }
                         })
 
-                    } catch
-                        (e) {
+                    } catch (e) {
                         socket.emit("endGameError", {error: {message: `error leaving room: ${e.message}`}})
                     }
                 })
