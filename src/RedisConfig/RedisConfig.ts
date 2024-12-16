@@ -53,7 +53,11 @@ async function createRedisClient() {
                             },
                             relations: ["gameRoom", "users", "winner"]
                         });
-                        await endGame(game, "FINISHED")
+
+                        if (game.status != "FINISHED") {
+                            await endGame(game, "FINISHED")
+                        }
+
                         break;
                     default:
                         break
