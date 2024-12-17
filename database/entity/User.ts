@@ -24,6 +24,9 @@ export class User {
     @Column({nullable: false})
     password: string
 
+    @Column({nullable: false, default: false})
+    isAdmin: boolean
+
     @CreateDateColumn({type: "timestamp", default: () => "CURRENT_TIMESTAMP(6)"})
     public created_at: Date;
 
