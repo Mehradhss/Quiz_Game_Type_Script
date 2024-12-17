@@ -152,10 +152,21 @@ export const userSocketListeners = asyncWrapper(async () => {
 
                         const roomId = data.roomId;
 
-                        if (!roomId || !verifiedUser.gameRooms.some((gameRoom) => gameRoom.uuid === roomId)) {
+                        const gameRoom = await dataSource.getRepository(GameRoom).findOne({
+                            where : {
+                                uuid : roomId
+                            },
+                            relations : ["users"]
+                        });
+
+                        if (!roomId || !gameRoom) {
                             socket.emit("selectCategoryError", {error: {message: "room not found"}});
 
                             return
+                        }
+
+                        if (!await isUserJoined(gameRoom , verifiedUserId)) {
+                            throw new Error("user is not joined in the given room!")
                         }
 
                         const categoryId = data.categoryId;
