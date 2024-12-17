@@ -1,6 +1,5 @@
-import {Entity, Column, PrimaryGeneratedColumn, ManyToOne, OneToMany, UpdateDateColumn, CreateDateColumn} from "typeorm"
+import {Entity, Column, PrimaryGeneratedColumn, OneToMany, UpdateDateColumn, CreateDateColumn} from "typeorm"
 import {Question} from "./Question";
-import {Answer} from "./Answer";
 import {Game} from "./Game";
 
 @Entity()
@@ -8,7 +7,7 @@ export class Category {
     @PrimaryGeneratedColumn()
     id: number
 
-    @Column({nullable: false})
+    @Column({nullable: false , unique : true})
     title: string
 
     @CreateDateColumn({ type: "timestamp", default: () => "CURRENT_TIMESTAMP(6)" })
@@ -17,9 +16,9 @@ export class Category {
     @UpdateDateColumn({ type: "timestamp", default: () => "CURRENT_TIMESTAMP(6)", onUpdate: "CURRENT_TIMESTAMP(6)" })
     public updated_at: Date;
 
-    @OneToMany((type) => Question, (question) => question.category)
+    @OneToMany(() => Question, (question) => question.category)
     questions: Question[]
 
-    @OneToMany((type) => Game, (game) => game.category)
+    @OneToMany(() => Game, (game) => game.category)
     games: Game[]
 }
