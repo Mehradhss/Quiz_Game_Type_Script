@@ -13,10 +13,22 @@ export class UserController {
         try {
             const body = {...req.body}
 
-            const user: any = await register(body.username, body.password)
+            const userExists = await dataSource.getRepository(User).findOne({
+                where: {
+                    username: body.username
+                }
+            });
 
-            const accessToken = createToken(user.id, "access");
-            const refreshToken = createToken(user.id, "refresh");
+            if (userExists) {
+                res.status(422).json({message : "username exists!"})
+
+                return
+            }
+
+            const user: any = await register(body.username, body.password);
+
+            const accessToken = createToken(user.id, "access", user.isAdmin);
+            const refreshToken = createToken(user.id, "refresh", user.isAdmin);
 
             const response = {
                 username: user.username,
@@ -70,7 +82,7 @@ export class UserController {
                     return res.status(406).json({message: 'Unauthorized'});
                 }
 
-                const accessToken = createToken(decoded.userId, "access");
+                const accessToken = createToken(decoded.userId, "access", decoded.isAdmin);
                 res.json({accessToken});
             })
     })

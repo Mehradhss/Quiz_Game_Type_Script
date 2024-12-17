@@ -19,8 +19,8 @@ export default async function loginService(req: Request, res: Response, username
             }
         })
 
-        const accessToken = createToken(foundUser.id, "access");
-        const refreshToken = createToken(foundUser.id, "refresh");
+        const accessToken = createToken(foundUser.id, "access" , foundUser.isAdmin);
+        const refreshToken = createToken(foundUser.id, "refresh" , foundUser.isAdmin);
 
         return {
             refreshToken: refreshToken,

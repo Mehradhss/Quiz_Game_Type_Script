@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 
-export default function createToken(userId, type) {
+export default function createToken(userId, type, isAdmin) {
     let secretKey;
     let expireTime;
 
@@ -16,5 +16,5 @@ export default function createToken(userId, type) {
             break
     }
 
-    return jwt.sign({userId: userId}, secretKey, {expiresIn: '120m'})
+    return jwt.sign({userId: userId, isAdmin: isAdmin}, secretKey, {expiresIn: '120m'})
 }
