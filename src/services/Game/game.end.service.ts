@@ -2,7 +2,6 @@ import {Game} from "../../../database/entity/Game";
 import {dataSource} from "../../../database/DataSource";
 import {QuestionResult} from "../../../database/entity/QuestionResult";
 import {User} from "../../../database/entity/User";
-import asyncWrapper from "../../middleware/wrappers/asyncWrapper";
 
 export const endGame = async (game: Game, finishStatus: string) => {
     try {

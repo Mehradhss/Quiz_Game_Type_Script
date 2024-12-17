@@ -4,7 +4,7 @@ import {Question} from "../../../database/entity/Question";
 import {GameQuestion} from "../../../database/entity/GameQuestion";
 import {GameSession} from "../../../database/entity/GameSession";
 import {EntityManager} from "typeorm";
-import {getRedisClient} from "../../RedisConfig/RedisConfig";
+import {getRedisClient} from "../../RedisConfig/redis.config";
 
 export const startGame = async function (game: Game, status: string) {
     const redisClient = getRedisClient()

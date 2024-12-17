@@ -1,4 +1,4 @@
-import asyncWrapper from "../../middleware/wrappers/asyncWrapper";
+import asyncWrapper from "../../middleware/wrappers/async.wrapper";
 import {QuestionResult} from "../../../database/entity/QuestionResult";
 import {dataSource} from "../../../database/DataSource";
 import {GameQuestion} from "../../../database/entity/GameQuestion";

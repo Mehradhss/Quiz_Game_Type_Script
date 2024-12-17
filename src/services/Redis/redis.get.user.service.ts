@@ -1,4 +1,4 @@
-import {getRedisClient} from "../../RedisConfig/RedisConfig";
+import {getRedisClient} from "../../RedisConfig/redis.config";
 
 export const getSocketUser = async (socketId) => {
     try {

@@ -3,7 +3,7 @@ import cors from 'cors';
 import http from "http"; // Correct import for http
 import express from "express"; // Import express
 import {router} from "../routes/appRoutes";
-import {expressAuthMiddleware} from "../middleware/expressAuthMiddleware";
+import {expressAuthMiddleware} from "../middleware/express.auth.middleware";
 
 const app = express(); // Create Express app
 app.use(express.json())

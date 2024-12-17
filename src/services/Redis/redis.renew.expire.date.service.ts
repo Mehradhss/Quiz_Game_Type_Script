@@ -1,5 +1,5 @@
-import {getRedisClient} from "../../RedisConfig/RedisConfig";
-import asyncWrapper from "../../middleware/wrappers/asyncWrapper";
+import {getRedisClient} from "../../RedisConfig/redis.config";
+import asyncWrapper from "../../middleware/wrappers/async.wrapper";
 
 export const renew = asyncWrapper(async (key, type) => {
     const redisClient = await getRedisClient()
