@@ -1,4 +1,4 @@
-import generateRoomUuId from "./RoomCreation";
+import generateRoomUuId from "./room.generate.uuid.service";
 import {dataSource} from "../../../database/DataSource";
 import {User} from "../../../database/entity/User";
 import {GameRoom} from "../../../database/entity/GameRoom";
