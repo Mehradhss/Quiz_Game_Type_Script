@@ -1,9 +1,9 @@
 import Redis, {RedisOptions} from "ioredis";
 import retry from "async-retry";
-import {roomExpired} from "../services/Redis/redis.room.expired.service";
-import {endGame} from "../services/Game/game.end.service";
-import {dataSource} from "../../database/DataSource";
-import {Game} from "../../database/entity/Game";
+import {roomExpired} from "../../services/Redis/redis.room.expired.service";
+import {endGame} from "../../services/Game/game.end.service";
+import {dataSource} from "../../../database/DataSource";
+import {Game} from "../../../database/entity/Game";
 
 let redisClient: Redis;
 

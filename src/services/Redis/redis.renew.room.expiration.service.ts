@@ -1,4 +1,4 @@
-import {getRedisClient} from "../../RedisConfig/redis.config";
+import {getRedisClient} from "../../redis/RedisConfig/redis.config";
 import asyncWrapper from "../../middleware/wrappers/async.wrapper";
 
 export const renewRoom = asyncWrapper(async (roomId) => {

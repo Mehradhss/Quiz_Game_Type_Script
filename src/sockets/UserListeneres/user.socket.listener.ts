@@ -2,7 +2,7 @@ import createGame from "../../services/Game/game.creation.service";
 import joinRoom from "../../services/Game/room.join.service";
 import {io} from "../../server/server.config";
 import asyncWrapper from "../../middleware/wrappers/async.wrapper";
-import {getRedisClient} from "../../RedisConfig/redis.config";
+import {getRedisClient} from "../../redis/RedisConfig/redis.config";
 import {authSocketMiddleware} from "../../middleware/auth.middleware";
 import {Socket} from "socket.io";
 import socketWrapper from "../../middleware/wrappers/socket.wrapper";
