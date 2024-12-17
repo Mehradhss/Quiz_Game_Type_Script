@@ -1,6 +1,6 @@
 import createGame from "../../services/Game/game.creation.service";
 import joinRoom from "../../services/Game/room.join.service";
-import {io} from "../../server/serverConfig";
+import {io} from "../../server/server.config";
 import asyncWrapper from "../../middleware/wrappers/async.wrapper";
 import {getRedisClient} from "../../RedisConfig/redis.config";
 import {authSocketMiddleware} from "../../middleware/auth.middleware";

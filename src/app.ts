@@ -1,4 +1,4 @@
-import {httpServer, io} from "./server/serverConfig";
+import {httpServer, io} from "./server/server.config";
 import {createRedisClient} from "./RedisConfig/redis.config";
 import {config} from "dotenv";
 import {userSocketListeners} from "./sockets/UserListeneres/user.socket.listener";

@@ -2,7 +2,7 @@ import {Server} from 'socket.io'
 import cors from 'cors';
 import http from "http"; // Correct import for http
 import express from "express"; // Import express
-import {router} from "../routes/appRoutes";
+import {router} from "../routes/app.routes";
 import {expressAuthMiddleware} from "../middleware/express.auth.middleware";
 
 const app = express(); // Create Express app
