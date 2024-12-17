@@ -43,7 +43,7 @@ export class Answer {
     @Column({nullable: true})
     title: string
 
-    @Column({nullable: false})
+    @Column({nullable: false, unique: true})
     text: string
 
     @Column({nullable: false, default: false})
@@ -55,12 +55,12 @@ export class Answer {
     @UpdateDateColumn({type: "timestamp", default: () => "CURRENT_TIMESTAMP(6)", onUpdate: "CURRENT_TIMESTAMP(6)"})
     public updated_at: Date;
 
-    @ManyToOne(type => Question, (question) => question.answers, {
+    @ManyToOne(() => Question, (question) => question.answers, {
         nullable: false,
         onDelete: "CASCADE",
     })
     question: Question
 
-    @OneToMany(type => QuestionResult, (questionResult) => questionResult.answer, {})
+    @OneToMany(() => QuestionResult, (questionResult) => questionResult.answer, {})
     questionResults: QuestionResult[]
 }

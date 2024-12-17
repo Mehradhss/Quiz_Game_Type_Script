@@ -12,7 +12,6 @@
 import {Entity, Column, PrimaryGeneratedColumn, ManyToOne, OneToMany, UpdateDateColumn, CreateDateColumn} from "typeorm"
 import {Answer} from "./Answer";
 import {Category} from "./Category";
-import {QuestionResult} from "./QuestionResult";
 import {GameQuestion} from "./GameQuestion";
 
 @Entity()
@@ -20,7 +19,7 @@ export class Question {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column({nullable: false})
+    @Column({nullable: false, unique: true})
     text: string;
 
     @CreateDateColumn({type: "timestamp", default: () => "CURRENT_TIMESTAMP(6)"})
@@ -29,10 +28,10 @@ export class Question {
     @UpdateDateColumn({type: "timestamp", default: () => "CURRENT_TIMESTAMP(6)", onUpdate: "CURRENT_TIMESTAMP(6)"})
     public updated_at: Date;
 
-    @OneToMany((type) => Answer, (answer) => answer.question, {})
+    @OneToMany(() => Answer, (answer) => answer.question, {})
     answers: Answer[]
 
-    @ManyToOne((type) => Category, (category) => category.questions, {
+    @ManyToOne(() => Category, (category) => category.questions, {
         nullable: false,
         onDelete: "CASCADE",
     })

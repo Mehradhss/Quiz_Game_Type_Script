@@ -14,7 +14,7 @@ export class GameRoom {
     @PrimaryGeneratedColumn()
     id: number
 
-    @Column({nullable: false})
+    @Column({nullable: false, unique: true})
     uuid: string
 
     @CreateDateColumn({type: "timestamp", default: () => "CURRENT_TIMESTAMP(6)"})
@@ -26,6 +26,6 @@ export class GameRoom {
     @OneToMany(() => Game, (game) => game.gameRoom)
     games: Game[]
 
-    @ManyToMany(() => User , (user) => user.gameRooms)
-    users : User[]
+    @ManyToMany(() => User, (user) => user.gameRooms)
+    users: User[]
 }
