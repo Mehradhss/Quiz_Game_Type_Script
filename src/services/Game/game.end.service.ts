@@ -21,6 +21,8 @@ export const endGame = async (game: Game, finishStatus: string) => {
 
             user.total_points += userPoints
 
+            await dataSource.manager.save(user)
+
             if (userPoints > winnerPoints) {
                 winner = user
                 winnerPoints = userPoints
