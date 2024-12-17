@@ -3,6 +3,7 @@ import {UserController} from "../controllers/v1/User/user.controller";
 import {CategoryController} from "../controllers/v1/Category/category.controller";
 import {LeaderboardController} from "../controllers/v1/LeaderBoard/leaderboard.controller";
 import {GameRoomController} from "../controllers/v1/GameRoom/game.room.controller";
+import {expressAuthMiddleware} from "../middleware/express.auth.middleware";
 
 const router = express.Router()
 
@@ -13,6 +14,8 @@ const categoryController = new CategoryController()
 const leaderBoardController = new LeaderboardController()
 
 const gameRoomController = new GameRoomController()
+
+router.use(expressAuthMiddleware)
 
 router.post('/api/v1/user/registration', userController.register)
 

@@ -2,8 +2,7 @@ import {Server} from 'socket.io'
 import cors from 'cors';
 import http from "http"; // Correct import for http
 import express from "express"; // Import express
-import {router} from "../routes/app.routes";
-import {expressAuthMiddleware} from "../middleware/express.auth.middleware";
+import {router} from "../routes/user.routes";
 
 const app = express(); // Create Express app
 app.use(express.json())
@@ -14,7 +13,6 @@ app.use(cors({
     allowedHeaders: "*",
     credentials: false,
 }));
-app.use(expressAuthMiddleware)
 app.use(router)
 
 app.all('*', (req, res) => {
