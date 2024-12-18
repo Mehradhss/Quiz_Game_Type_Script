@@ -4,7 +4,7 @@
   "scripts": {
     "start": "nodemon src\\app.ts",
     "argument": "ech",
-    "migration:generate": "npx typeorm-ts-node-commonjs migration:generate .\\database\\migrations\\GeneratedMigration -d .\\database\\DataSource.ts",
+    "migration:generate": "npx typeorm-ts-node-commonjs migration:generate .\\database\\migrations\\%npm_config_name% -d .\\database\\DataSource.ts",
     "migration:run": "npx typeorm-ts-node-commonjs migration:run -d .\\database\\DataSource.ts\n",
     "stnt": "nodemon src/index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
