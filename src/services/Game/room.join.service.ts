@@ -11,7 +11,8 @@ export default async function joinRoom(socket: Socket, roomUuid, userId) {
     const gameRoom = await gameRoomRepository.findOneOrFail({
         where: {
             uuid: roomUuid
-        }
+        },
+        relations: ["users"]
     });
 
     const user = await userRepository.findOneOrFail({

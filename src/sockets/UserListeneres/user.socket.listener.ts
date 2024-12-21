@@ -53,6 +53,8 @@ export const userSocketListeners = asyncWrapper(async () => {
 
                 verifiedUser.gameRooms.forEach((gameRoom: GameRoom) => {
                     socket.join(gameRoom.uuid)
+
+                    socket.emit(`joined.${gameRoom.uuid}`, {roomId: gameRoom.uuid})
                 })
 
                 const verifiedUserId = verifiedUser?.id
@@ -94,7 +96,7 @@ export const userSocketListeners = asyncWrapper(async () => {
                         where: {
                             uuid: roomId
                         },
-                        relations: ['users', "games"]
+                        relations: ["users", "games"]
                     });
 
                     if (!gameRoom) {
@@ -111,11 +113,19 @@ export const userSocketListeners = asyncWrapper(async () => {
                         throw new Error("user already joined")
                     }
 
-                    const joinedGameRoom = await joinRoom(socket, roomId, verifiedUserId);
+                    const joinedGameRoom = await joinRoom(socket, gameRoom, verifiedUserId);
 
                     await renew(`room.${gameRoom.uuid}`, 'room')
 
-                    socket.emit('gameRoomJoined', {room: gameRoomResource(joinedGameRoom)});
+                    v1UserRoute.to(roomId).emit('gameRoomJoined', {
+                        room: gameRoomResource(joinedGameRoom),
+                        user: userResource(verifiedUser)
+                    });
+
+                    if (gameRoom.users.length === 2) {
+                        v1UserRoute.to(roomId).emit('gameRoomReadyToStart', {room: gameRoomResource(gameRoom)});
+                    }
+
                     console.log('User joined game with room ID:', roomId);
 
 
