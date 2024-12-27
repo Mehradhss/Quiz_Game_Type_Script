@@ -20,7 +20,7 @@ export class UserController {
             });
 
             if (userExists) {
-                res.status(422).json({message : "username exists!"})
+                res.status(422).json({message: "username exists!"})
 
                 return
             }
@@ -32,6 +32,7 @@ export class UserController {
 
             const response = {
                 username: user.username,
+                userId: user.id,
                 token: accessToken
             }
             res.cookie('jwt', refreshToken, {
@@ -52,16 +53,19 @@ export class UserController {
         try {
             const body = {...req.body}
 
-            const tokens = await loginService(req, res, body.username, body.password)
+            const loginData = await loginService(req, res, body.username, body.password)
 
-            res.cookie('jwt', tokens.refreshToken, {
+            res.cookie('jwt', loginData.refreshToken, {
                 httpOnly: true,
                 maxAge: 24 * 60 * 60 * 1000,
                 sameSite: "none",
                 secure: true
             });
 
-            res.json({token: tokens.accessToken}).status(200)
+            res.json({
+                userId: loginData.userId,
+                token: loginData.accessToken
+            }).status(200)
         } catch (error) {
             console.log('error getting request body' + error)
 

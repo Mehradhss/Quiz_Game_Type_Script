@@ -24,7 +24,8 @@ export default async function loginService(req: Request, res: Response, username
 
         return {
             refreshToken: refreshToken,
-            accessToken: accessToken
+            accessToken: accessToken,
+            userId : foundUser.id
         };
 
     } catch (error) {
