@@ -113,7 +113,7 @@ export const userSocketListeners = asyncWrapper(async () => {
                         throw new Error("user already joined")
                     }
 
-                    const joinedGameRoom = await joinRoom(socket, gameRoom, verifiedUserId);
+                    const joinedGameRoom = await joinRoom(socket, roomId, verifiedUserId);
 
                     await renew(`room.${gameRoom.uuid}`, 'room')
 
