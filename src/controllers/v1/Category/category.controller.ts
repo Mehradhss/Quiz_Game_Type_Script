@@ -3,6 +3,7 @@ import {dataSource} from "../../../../database/DataSource";
 import {Category} from "../../../../database/entity/Category";
 import express from "express";
 import * as expressJwt from "express-jwt";
+import {validationResult} from "express-validator";
 
 export class CategoryController {
     index = asyncHandler(async (req, res) => {
@@ -29,6 +30,11 @@ export class CategoryController {
 
     create = asyncHandler(async (req: expressJwt.Request, res: express.Response) => {
             try {
+                const result1 = validationResult(req);
+                if (!result1.isEmpty()) {
+                    res.send({errors: result1.array()});
+                }
+
                 if (!req.auth?.isAdmin) {
                     res.status(401).json({
                         data: {
@@ -39,27 +45,7 @@ export class CategoryController {
 
                 const body = {...req.body}
 
-                if (!body?.title) {
-                    res.status(422).json({
-                        data: {
-                            message: "category title is required"
-                        }
-                    })
-                }
-
                 const categoryRepository = dataSource.getRepository(Category);
-
-                const categoryExists = await categoryRepository.findOne({
-                    where: {
-                        title: body?.title
-                    }
-                })
-
-                if (categoryExists) {
-                    res.status(422).json({
-                        message: "category already exists!"
-                    })
-                }
 
                 const category = new Category();
                 category.title = body?.title;
