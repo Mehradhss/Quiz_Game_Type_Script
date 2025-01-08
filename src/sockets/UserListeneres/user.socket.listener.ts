@@ -134,9 +134,14 @@ export const userSocketListeners = asyncWrapper(async () => {
                 socketWrapper(socket, 'searchForGameRoom', async () => {
                     const joinAbleGameRoom = await getJoinAbleGameRoom(verifiedUserId)
 
+                    if (!joinAbleGameRoom){
+                        throw new Error("no joinable game room found.")
+                    }
+
                     await renew(`room.${joinAbleGameRoom.uuid}`, 'room')
 
                     socket.emit('searchForGameSuccess', {data: gameRoomResource(joinAbleGameRoom)});
+
                 }, "searchForGameError")
 
                 socketWrapper(socket, 'selectCategory', async (data) => {
