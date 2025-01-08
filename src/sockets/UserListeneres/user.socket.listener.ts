@@ -430,7 +430,7 @@ export const userSocketListeners = asyncWrapper(async () => {
                             }
                         })
 
-                        throw new Error("all questions fetched!")
+                        return
                     }
 
                     socket.emit("questionFetched", {data: {question: fetchedGameQuestion}})
