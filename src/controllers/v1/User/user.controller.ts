@@ -7,6 +7,7 @@ import jwt from "jsonwebtoken";
 import {dataSource} from "../../../../database/DataSource";
 import {User} from "../../../../database/entity/User";
 import {userResource} from "../../../resources/user.resource";
+import {gameCollectionResource} from "../../../resources/game.collection.resource";
 
 export class UserController {
     register = asyncHandler(async (req, res) => {
@@ -98,12 +99,38 @@ export class UserController {
             where: {
                 id: parseInt(userId)
             },
-            relations: ["gameRooms"]
+            relations: ["gameRooms", "games"]
         });
 
         res.status(200).json({
             data: {
                 user: userResource(user)
+            }
+        })
+    })
+
+    gameHistory = asyncHandler(async (req: express.Request, res: express.Response) => {
+        const userId = req.params?.userId
+        const user = await dataSource.getRepository(User).findOne({
+            where: {
+                id: parseInt(userId)
+            },
+            relations: ["games"]
+        })
+        if (!user) {
+            res.status(404).json({
+                data:
+                    {
+                        message: "user not found"
+                    }
+            })
+
+            return
+        }
+
+        res.status(200).json({
+            data: {
+                games: gameCollectionResource(user.games)
             }
         })
     })

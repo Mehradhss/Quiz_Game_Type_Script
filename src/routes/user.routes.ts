@@ -31,6 +31,8 @@ router.get('/api/v1/user/:userId/', userController.show)
 
 router.get('/api/v1/game-room/:gameRoomId/', gameRoomController.show)
 
+router.get('/api/v1/user/:userId/game-history', userController.gameHistory)
+
 export {
     router
 }
