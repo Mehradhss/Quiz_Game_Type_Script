@@ -3,9 +3,7 @@ import {dataSource} from "../../../database/DataSource";
 import {GameQuestion} from "../../../database/entity/GameQuestion";
 import {Answer} from "../../../database/entity/Answer";
 import {QuestionResult} from "../../../database/entity/QuestionResult";
-import {gameQuestionResource} from "../../resources/game.question.resource";
-import {answerCollectionResource} from "../../resources/answer.collection.resource";
-import {answerResource} from "../../resources/answer.resource";
+
 
 export const fetchQuestion = async function (game: Game, userId) {
     try {
@@ -38,23 +36,21 @@ export const fetchQuestion = async function (game: Game, userId) {
 
             console.log(availableGameQuestions[0])
 
-            const correctAnswer = answerResource(await answerRepository.createQueryBuilder("answers")
+            const correctAnswer = await answerRepository.createQueryBuilder("answers")
                 .andWhere('answers.questionId = :questionId', {questionId: gameQuestion.id})
                 .where("answers.is_correct = 1")
-                .getOne());
-            const wrongAnswers = answerCollectionResource(await answerRepository.createQueryBuilder("answers")
+                .getOne();
+            const wrongAnswers = await answerRepository.createQueryBuilder("answers")
                 .andWhere('answers.questionId = :questionId', {questionId: gameQuestion.id})
                 .where("answers.is_correct = 0")
                 .take(3)
-                .getMany());
+                .getMany();
 
             return {
                 question: gameQuestion,
                 remainingQuestions: remainingGameQuestions,
-                answers: {
-                    wrongAnswers,
-                    correctAnswer
-                }
+                answers:
+                    [...wrongAnswers, correctAnswer]
             };
         }
 
