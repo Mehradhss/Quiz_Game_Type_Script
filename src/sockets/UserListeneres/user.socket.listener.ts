@@ -41,7 +41,6 @@ const v1UserRoute = io.of('/v1/user').use((socket, next) => {
     authSocketMiddleware(socket, next)
 })
 
-// const v1UserRoute = io.of('/v1/user')
 
 export const userSocketListeners = asyncWrapper(async () => {
         v1UserRoute.adapter.on("create-room", (room) => {
@@ -62,7 +61,7 @@ export const userSocketListeners = asyncWrapper(async () => {
 
                 const verifiedUserId = verifiedUser?.id
 
-                const redisClient = await getRedisClient()
+                const redisClient = getRedisClient()
 
                 socketWrapper(socket, 'createGameRoom', async () => {
                     const availableEmptyRoom = await getEmptyGameRoom()
@@ -178,9 +177,16 @@ export const userSocketListeners = asyncWrapper(async () => {
 
                     await renew(`room.${roomId}`, 'room')
 
+                    const categorySelectedKey = `category.${roomId}.selected`;
+
+                    const stringUserId = verifiedUserId.toString();
+
+                    await redisClient.hset(categorySelectedKey, stringUserId , stringUserId)
+
                     v1UserRoute.to(roomId).emit("categorySelected", {
                         data: {
-                            category: categoryResource(category)
+                            category: categoryResource(category),
+                            user: userResource(verifiedUser)
                         }
                     });
                 }, "selectCategoryError")
@@ -221,6 +227,11 @@ export const userSocketListeners = asyncWrapper(async () => {
 
                     if (!await isUserJoined(gameRoom, verifiedUserId)) {
                         throw new Error("user not joined");
+                    }
+
+                    const categorySelectedKey = `category.${roomId}.selected`;
+                    if (!await redisClient.exists(categorySelectedKey) || await redisClient.hlen(categorySelectedKey) < 2) {
+                        throw new Error("both players must select category")
                     }
 
                     socket.join(gameRoom.uuid)
