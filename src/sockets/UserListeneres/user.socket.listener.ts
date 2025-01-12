@@ -26,6 +26,9 @@ import {userResource} from "../../resources/user.resource";
 import {gameRoomResource} from "../../resources/game.room.resource";
 import {answerResource} from "../../resources/answer.resource";
 import {jsonParser} from "../../helpers/json.parser";
+import {gameQuestionResource} from "../../resources/game.question.resource";
+import {answerCollectionResource} from "../../resources/answer.collection.resource";
+import {categoryResource} from "../../resources/category.resource";
 
 const gameStatus = Object.freeze({
     PENDING: 'PENDING',
@@ -134,7 +137,7 @@ export const userSocketListeners = asyncWrapper(async () => {
                 socketWrapper(socket, 'searchForGameRoom', async () => {
                     const joinAbleGameRoom = await getJoinAbleGameRoom(verifiedUserId)
 
-                    if (!joinAbleGameRoom){
+                    if (!joinAbleGameRoom) {
                         throw new Error("no joinable game room found.")
                     }
 
@@ -177,7 +180,7 @@ export const userSocketListeners = asyncWrapper(async () => {
 
                     v1UserRoute.to(roomId).emit("categorySelected", {
                         data: {
-                            category: category
+                            category: categoryResource(category)
                         }
                     });
                 }, "selectCategoryError")
@@ -433,7 +436,12 @@ export const userSocketListeners = asyncWrapper(async () => {
                         return
                     }
 
-                    socket.emit("questionFetched", {data: {question: fetchedGameQuestion}})
+                    socket.emit("questionFetched", {
+                        data: {
+                            gameQuestion: gameQuestionResource(fetchedGameQuestion.question),
+                            answers: answerCollectionResource(fetchedGameQuestion.answers)
+                        }
+                    })
                 }, "fetchQuestionError")
 
                 socketWrapper(socket, "submitAnswer", async (data) => {
