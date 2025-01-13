@@ -177,11 +177,9 @@ export const userSocketListeners = asyncWrapper(async () => {
 
                     await renew(`room.${roomId}`, 'room')
 
-                    const categorySelectedKey = `category.${roomId}.selected`;
+                    const categorySelectedKey = `${verifiedUserId}.category.${roomId}.selected`;
 
-                    const stringUserId = verifiedUserId.toString();
-
-                    await redisClient.hset(categorySelectedKey, stringUserId , stringUserId)
+                    await redisClient.hset(categorySelectedKey, categoryId, categoryId)
 
                     v1UserRoute.to(roomId).emit("categorySelected", {
                         data: {
@@ -227,11 +225,6 @@ export const userSocketListeners = asyncWrapper(async () => {
 
                     if (!await isUserJoined(gameRoom, verifiedUserId)) {
                         throw new Error("user not joined");
-                    }
-
-                    const categorySelectedKey = `category.${roomId}.selected`;
-                    if (!await redisClient.exists(categorySelectedKey) || await redisClient.hlen(categorySelectedKey) < 2) {
-                        throw new Error("both players must select category")
                     }
 
                     socket.join(gameRoom.uuid)
