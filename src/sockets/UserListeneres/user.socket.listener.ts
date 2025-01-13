@@ -286,6 +286,10 @@ export const userSocketListeners = asyncWrapper(async () => {
 
                     await renew(playerReadyKey, "game")
 
+                    if (await redisClient.hlen(playerReadyKey) === game.users.length) {
+                        v1UserRoute.to(roomId).emit('readyToStartGame', {data: {game: gameResource(game)}})
+                    }
+
                     await renew(`room.${roomId}`, 'room')
 
                     v1UserRoute.to(roomId).emit('playerReady', {data: {user: userResource(verifiedUser)}})
@@ -336,7 +340,7 @@ export const userSocketListeners = asyncWrapper(async () => {
 
                 }, "unreadyToStartError")
 
-                socketWrapper(socket, 'userGameState', async (data) =>{
+                socketWrapper(socket, 'userGameState', async (data) => {
                     data = jsonParser(data);
 
                     let readyState = false;
