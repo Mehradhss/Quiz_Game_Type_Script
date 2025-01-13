@@ -336,6 +336,45 @@ export const userSocketListeners = asyncWrapper(async () => {
 
                 }, "unreadyToStartError")
 
+                socketWrapper(socket, 'userGameState', async (data) =>{
+                    data = jsonParser(data);
+
+                    let readyState = false;
+
+                    const roomId = data.roomId
+                    if (!roomId) {
+                        throw new Error("room id not provided")
+                    }
+
+                    const gameId = data.gameId
+                    if (!gameId) {
+                        throw new Error("game id not provided")
+                    }
+                    const game = await dataSource.getRepository(Game).findOneOrFail({
+                        where: {
+                            id: gameId
+                        },
+                        relations: ["users"]
+                    })
+
+                    if (!game.users.some(user => user.id === verifiedUserId)) {
+                        throw new Error("user is not in the game!")
+                    }
+
+                    const playerReadyKey = `game.${gameId}.ready.players`;
+
+                    const stringUserId = verifiedUserId.toString();
+
+                    if (await redisClient.exists(playerReadyKey)) {
+                        if (await redisClient.hexists(playerReadyKey, stringUserId)) {
+                            readyState = true;
+                        }
+                    }
+
+                    socket.emit("userGameStateReady", {data: {user: userResource(verifiedUser), readyState: readyState}})
+
+                }, "userGameStateError")
+
                 socketWrapper(socket, 'startGame', async (data) => {
                     data = jsonParser(data);
 
