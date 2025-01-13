@@ -341,11 +341,6 @@ export const userSocketListeners = asyncWrapper(async () => {
 
                     let readyState = false;
 
-                    const roomId = data.roomId
-                    if (!roomId) {
-                        throw new Error("room id not provided")
-                    }
-
                     const gameId = data.gameId
                     if (!gameId) {
                         throw new Error("game id not provided")
