@@ -235,7 +235,7 @@ export const userSocketListeners = asyncWrapper(async () => {
 
                     const newGame = await createGame(gameRoom, gameStatus.PENDING, categoryId, difficultyMultiplier)
 
-                    v1UserRoute.to(gameRoom.uuid).emit('gameCreated', {data: {game: newGame}})
+                    v1UserRoute.to(gameRoom.uuid).emit('gameCreated', {data: {game: gameResource(newGame)}})
                 }, "gameCreationError")
 
                 socketWrapper(socket, 'readyToStart', async (data) => {
