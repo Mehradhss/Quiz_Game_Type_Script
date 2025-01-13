@@ -235,7 +235,14 @@ export const userSocketListeners = asyncWrapper(async () => {
 
                     const newGame = await createGame(gameRoom, gameStatus.PENDING, categoryId, difficultyMultiplier)
 
-                    v1UserRoute.to(gameRoom.uuid).emit('gameCreated', {data: {game: gameResource(newGame)}})
+                    const newGameWithCategory = await dataSource.getRepository(Game).findOne({
+                        where: {
+                            id: newGame.id,
+                        },
+                        relations: ['category']
+                    })
+
+                    v1UserRoute.to(gameRoom.uuid).emit('gameCreated', {data: {game: gameResource(newGameWithCategory)}})
                 }, "gameCreationError")
 
                 socketWrapper(socket, 'readyToStart', async (data) => {
