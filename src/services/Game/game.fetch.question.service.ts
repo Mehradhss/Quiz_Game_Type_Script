@@ -34,8 +34,6 @@ export const fetchQuestion = async function (game: Game, userId) {
 
             const gameQuestion = availableGameQuestions[0];
 
-            console.log(availableGameQuestions[0])
-
             const correctAnswer = await answerRepository.createQueryBuilder("answers")
                 .andWhere('answers.questionId = :questionId', {questionId: gameQuestion.id})
                 .where("answers.is_correct = 1")

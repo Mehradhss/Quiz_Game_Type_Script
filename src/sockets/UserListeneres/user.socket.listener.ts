@@ -475,13 +475,6 @@ export const userSocketListeners = asyncWrapper(async () => {
                     const fetchedGameQuestion = await fetchQuestion(game, verifiedUserId)
 
                     if (!fetchedGameQuestion) {
-                        socket.emit("gameFinished", {
-                            data: {
-                                message: "game finished",
-                                user: verifiedUser
-                            }
-                        })
-
                         v1UserRoute.to(roomId).emit("gameFinished", {
                             data: {
                                 message: "game finished",
