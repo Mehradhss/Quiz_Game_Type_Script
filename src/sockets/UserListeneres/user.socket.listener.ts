@@ -343,8 +343,6 @@ export const userSocketListeners = asyncWrapper(async () => {
                 socketWrapper(socket, 'userGameState', async (data) => {
                     data = jsonParser(data);
 
-                    let readyState = false;
-
                     const gameId = data.gameId
                     if (!gameId) {
                         throw new Error("game id not provided")
@@ -356,21 +354,30 @@ export const userSocketListeners = asyncWrapper(async () => {
                         relations: ["users"]
                     })
 
-                    if (!game.users.some(user => user.id === verifiedUserId)) {
-                        throw new Error("user is not in the game!")
-                    }
-
                     const playerReadyKey = `game.${gameId}.ready.players`;
 
-                    const stringUserId = verifiedUserId.toString();
+                    let usersGameStates = [];
 
                     if (await redisClient.exists(playerReadyKey)) {
-                        if (await redisClient.hexists(playerReadyKey, stringUserId)) {
-                            readyState = true;
+                        for (const user of game.users) {
+                            const stringUserId = user.id.toString();
+                            if (!(await redisClient.hexists(playerReadyKey, stringUserId))) {
+                                usersGameStates.push({
+                                    user: userResource(user),
+                                    readyState: false
+                                });
+
+                                continue;
+                            }
+
+                            usersGameStates.push({
+                                user: userResource(user),
+                                readyState: true
+                            })
                         }
                     }
 
-                    socket.emit("userGameStateReady", {data: {user: userResource(verifiedUser), readyState: readyState}})
+                    socket.emit("userGameStateReady", {data: usersGameStates})
 
                 }, "userGameStateError")
 
