@@ -413,6 +413,11 @@ export const userSocketListeners = asyncWrapper(async () => {
                     if (game.status === gameStatus.STARTED) {
                         throw new Error("game already started")
                     }
+
+                    if (game.status === gameStatus.FINISHED) {
+                        throw new Error("game is finished.")
+                    }
+
                     if (game.users.length < 2) {
                         throw new Error("not enough players to start game !");
                     }
