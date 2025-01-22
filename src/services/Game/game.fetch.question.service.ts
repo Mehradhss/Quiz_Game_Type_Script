@@ -7,9 +7,9 @@ import {QuestionResult} from "../../../database/entity/QuestionResult";
 
 export const fetchQuestion = async function (game: Game, userId) {
     try {
-        const gameQuestionRepository = await dataSource.getRepository(GameQuestion);
+        const gameQuestionRepository = dataSource.getRepository(GameQuestion);
 
-        const answerRepository = await dataSource.getRepository(Answer)
+        const answerRepository = dataSource.getRepository(Answer)
 
         const answeredGameQuestions = await dataSource.getRepository(QuestionResult).createQueryBuilder('questionResults')
             .innerJoin('questionResults.gameQuestion', 'gameQuestion')
@@ -29,7 +29,7 @@ export const fetchQuestion = async function (game: Game, userId) {
 
         const availableGameQuestions = await availableGameQuestionsQuery.getMany()
 
-        if (availableGameQuestions) {
+        if (availableGameQuestions.length > 0) {
             const remainingGameQuestions = (availableGameQuestions.length) - 1;
 
             const gameQuestion = availableGameQuestions[0];
@@ -46,7 +46,7 @@ export const fetchQuestion = async function (game: Game, userId) {
 
             return {
                 question: gameQuestion,
-                remainingQuestions: remainingGameQuestions,
+                remainingQuestionsCount: remainingGameQuestions,
                 answers:
                     [...wrongAnswers, correctAnswer]
             };

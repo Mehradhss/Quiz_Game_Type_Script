@@ -388,16 +388,16 @@ export const userSocketListeners = asyncWrapper(async () => {
                     if (!roomId) {
                         throw new Error("room id not provided")
                     }
-                    const socketRoom = v1UserRoute.adapter.rooms.get(roomId);
+                    // const socketRoom = v1UserRoute.adapter.rooms.get(roomId);
 
                     const gameId = data.gameId;
                     if (!gameId) {
                         throw new Error("game id not provided")
                     }
 
-                    if (socketRoom.size < 2) {
-                        throw new Error("a player disconnected!")
-                    }
+                    // if (socketRoom.size < 2) {
+                    //     throw new Error("a player disconnected!")
+                    // }
 
                     const playerReadyKey = `game.${gameId}.ready.players`;
                     if (!await redisClient.exists(playerReadyKey) || await redisClient.hlen(playerReadyKey) < 2) {
@@ -453,7 +453,7 @@ export const userSocketListeners = asyncWrapper(async () => {
                         where: {
                             id: gameId
                         },
-                        relations: ["users", "gameQuestions", "category"]
+                        relations: ["users", "gameQuestions", "category", "gameRoom"]
                     });
 
                     if (!game) {
@@ -479,21 +479,23 @@ export const userSocketListeners = asyncWrapper(async () => {
 
                     const fetchedGameQuestion = await fetchQuestion(game, verifiedUserId)
 
-                    if (!fetchedGameQuestion) {
-                        v1UserRoute.to(roomId).emit("gameFinished", {
-                            data: {
-                                message: "game finished",
-                                user: verifiedUser
-                            }
-                        })
-
-                        return
-                    }
+                    // if (!fetchedGameQuestion) {
+                    //     socket.emit("playerEndedGame", {
+                    //         data: {
+                    //             message: "game finished",
+                    //             gameRoom: gameRoomResource(game.gameRoom),
+                    //             user: verifiedUser
+                    //         }
+                    //     })
+                    //
+                    //     return
+                    // }
 
                     socket.emit("questionFetched", {
                         data: {
                             gameQuestion: gameQuestionResource(fetchedGameQuestion.question),
-                            answers: answerCollectionResource(fetchedGameQuestion.answers)
+                            answers: answerCollectionResource(fetchedGameQuestion.answers),
+                            remainingQuestionsCount: fetchedGameQuestion.remainingQuestionsCount,
                         }
                     })
                 }, "fetchQuestionError")
@@ -633,7 +635,7 @@ export const userSocketListeners = asyncWrapper(async () => {
                     if (await redisClient.hlen(playerEndKey) === game.users.length) {
                         await endGame(game, gameStatus.FINISHED)
 
-                        v1UserRoute.to(game.gameRoom.uuid).emit("gameEnded", {
+                        v1UserRoute.to(game.gameRoom.uuid).emit("gameFinished", {
                             data: {
                                 game: gameResource(game),
                             }
@@ -644,11 +646,12 @@ export const userSocketListeners = asyncWrapper(async () => {
 
                     v1UserRoute.to(game.gameRoom.uuid).emit("playerGameEnded", {
                         data: {
-                            game: gameResource(game),
-                            user: userResource(verifiedUser)
+                            message: "game finished",
+                            gameRoom: gameRoomResource(game.gameRoom),
+                            user: verifiedUser
                         }
                     })
-                }, "playerEndGameError")
+                    }, "playerEndGameError")
 
                 socketWrapper(socket, "endGame", async (data) => {
                     data = jsonParser(data);
