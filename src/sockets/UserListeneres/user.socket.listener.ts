@@ -120,8 +120,10 @@ export const userSocketListeners = asyncWrapper(async () => {
                     await renew(`room.${gameRoom.uuid}`, 'room')
 
                     v1UserRoute.to(roomId).emit('gameRoomJoined', {
-                        room: gameRoomResource(joinedGameRoom),
-                        user: userResource(verifiedUser)
+                        data: {
+                            room: gameRoomResource(joinedGameRoom),
+                            user: userResource(verifiedUser)
+                        }
                     });
 
                     if (gameRoom.users.length === 2) {
@@ -651,7 +653,7 @@ export const userSocketListeners = asyncWrapper(async () => {
                             user: verifiedUser
                         }
                     })
-                    }, "playerEndGameError")
+                }, "playerEndGameError")
 
                 socketWrapper(socket, "endGame", async (data) => {
                     data = jsonParser(data);
