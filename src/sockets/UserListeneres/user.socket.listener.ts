@@ -360,23 +360,27 @@ const userSocketListeners = asyncWrapper(async () => {
 
                     let usersGameStates = [];
 
-                    if (await redisClient.exists(playerReadyKey)) {
-                        for (const user of game.users) {
-                            const stringUserId = user.id.toString();
-                            if (!(await redisClient.hexists(playerReadyKey, stringUserId))) {
-                                usersGameStates.push({
-                                    user: userResource(user),
-                                    readyState: false
-                                });
+                    for (const user of game.users) {
+                        let playerIsFinished = false;
+                        let playerReadyState = false;
+                        const stringUserId = user.id.toString();
 
-                                continue;
+                        const playerEndKey = `ended.${gameId}`
+                        if (await redisClient.exists(playerEndKey)) {
+                            if (await redisClient.hexists(playerEndKey, stringUserId)) {
+                                playerIsFinished = true
                             }
-
-                            usersGameStates.push({
-                                user: userResource(user),
-                                readyState: true
-                            })
                         }
+
+                        if (await redisClient.hexists(playerReadyKey, stringUserId)) {
+                            playerReadyState = true
+                        }
+
+                        usersGameStates.push({
+                            user: userResource(user),
+                            readyState: playerReadyState,
+                            isFinished: playerIsFinished
+                        })
                     }
 
                     socket.emit("userGameStateReady", {data: usersGameStates})
