@@ -2,6 +2,7 @@ import {httpServer, io} from "./server/server.config";
 import {createRedisClient} from "./redis/RedisConfig/redis.config";
 import {config} from "dotenv";
 import {userSocketListeners} from "./sockets/UserListeneres/user.socket.listener";
+import {dataSource} from "../database/DataSource";
 
 config();
 
@@ -10,6 +11,15 @@ const appPort = process.env.APP_PORT ?? 3000
 httpServer.listen(appPort, async () => {
     try {
         await createRedisClient().then(async () => {
+            await dataSource.initialize().then(
+                () => {
+                    console.log("Connected")
+                }
+            ).catch((err: any) => {
+                console.log("Connection error is : ", err)
+                throw new Error(err)
+            })
+
             await userSocketListeners(io)
         })
     } catch (err) {

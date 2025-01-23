@@ -30,11 +30,3 @@ export const dataSource = new DataSource({
     entities: ["./database/entity/*.ts"],
     migrations: ["./database/migrations/*.ts"]
 })
-
-dataSource.initialize().then(
-    () => {
-        console.log("Connected")
-    }
-).catch((err: any) => {
-    console.log("Connection error is : ", err)
-})
