@@ -42,7 +42,7 @@ const v1UserRoute = io.of('/v1/user').use((socket, next) => {
 })
 
 
-export const userSocketListeners = asyncWrapper(async () => {
+const userSocketListeners = asyncWrapper(async () => {
         v1UserRoute.adapter.on("create-room", (room) => {
             console.log(`[${new Date().toISOString()}]`, `room ${room} was created`);
         })
@@ -471,27 +471,17 @@ export const userSocketListeners = asyncWrapper(async () => {
 
                     if (game.status != gameStatus.STARTED) {
                         if (game.status === gameStatus.FINISHED) {
-                            socket.emit("gameFinished", {data: {message: "this game is finished"}})
-
-                            return
+                            throw new Error("this game is finished!")
                         }
 
-                        throw new Error("game has not started yet");
+                        throw new Error("game has not started yet!");
                     }
 
                     const fetchedGameQuestion = await fetchQuestion(game, verifiedUserId)
 
-                    // if (!fetchedGameQuestion) {
-                    //     socket.emit("playerEndedGame", {
-                    //         data: {
-                    //             message: "game finished",
-                    //             gameRoom: gameRoomResource(game.gameRoom),
-                    //             user: verifiedUser
-                    //         }
-                    //     })
-                    //
-                    //     return
-                    // }
+                    if (!fetchedGameQuestion) {
+                        throw new Error("all questions are  answered!")
+                    }
 
                     socket.emit("questionFetched", {
                         data: {
@@ -634,23 +624,25 @@ export const userSocketListeners = asyncWrapper(async () => {
 
                     await redisClient.hset(playerEndKey, stringUserId, stringUserId)
 
+                    socket.emit("playerGameEnded", {
+                        data: {
+                            message: "player game finished",
+                            gameRoom: gameRoomResource(game.gameRoom),
+                            user: userResource(verifiedUser)
+                        }
+                    })
+
                     if (await redisClient.hlen(playerEndKey) === game.users.length) {
                         await endGame(game, gameStatus.FINISHED)
-
-                        v1UserRoute.to(game.gameRoom.uuid).emit("gameFinished", {
-                            data: {
-                                game: gameResource(game),
-                            }
-                        })
 
                         return
                     }
 
-                    v1UserRoute.to(game.gameRoom.uuid).emit("playerGameEnded", {
+                    v1UserRoute.to(game.gameRoom.uuid).emit("playerGameEndedNotify", {
                         data: {
-                            message: "game finished",
+                            message: "player game finished",
                             gameRoom: gameRoomResource(game.gameRoom),
-                            user: verifiedUser
+                            user: userResource(verifiedUser)
                         }
                     })
                 }, "playerEndGameError")
@@ -699,3 +691,8 @@ export const userSocketListeners = asyncWrapper(async () => {
         )
     }
 )
+
+export {
+    userSocketListeners,
+    v1UserRoute
+}

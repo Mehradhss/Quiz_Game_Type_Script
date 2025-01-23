@@ -2,6 +2,8 @@ import {Game} from "../../../database/entity/Game";
 import {dataSource} from "../../../database/DataSource";
 import {QuestionResult} from "../../../database/entity/QuestionResult";
 import {User} from "../../../database/entity/User";
+import {gameResource} from "../../resources/game.resource";
+import {v1UserRoute} from "../../sockets/UserListeneres/user.socket.listener";
 
 export const endGame = async (game: Game, finishStatus: string) => {
     try {
@@ -33,6 +35,12 @@ export const endGame = async (game: Game, finishStatus: string) => {
         game.winner = winner;
 
         await dataSource.manager.save(game)
+
+        v1UserRoute.to(game.gameRoom.uuid).emit("gameFinished", {
+            data: {
+                game: gameResource(game),
+            }
+        })
 
     }catch (e) {
         throw e
