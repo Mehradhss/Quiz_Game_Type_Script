@@ -7,6 +7,7 @@ import {QuestionService} from "../../../../services/Question/question.service";
 import {questionResource} from "../../../../resources/question.resource";
 import {validationResult} from "express-validator";
 import {Question} from "../../../../../database/entity/Question";
+import {questionCollectionResource} from "../../../../resources/question.collection.resource";
 
 export class QuestionController {
     protected questionService;
@@ -96,6 +97,46 @@ export class QuestionController {
         } catch (e) {
             res.status(500).json({
                 message: e.message
+            })
+        }
+    })
+
+    index = asyncHandler(async (req: expressJwt.Request, res: express.Response) => {
+        try {
+            if (!req.auth?.isAdmin) {
+
+                res.status(401).json({
+                    data: {
+                        message: "not authorized"
+                    }
+                })
+            }
+
+            const body = req.body;
+
+            console.log(body)
+            console.log({...req.body})
+
+            const questionsQueryBuilder = await dataSource.getRepository(Question)
+                .createQueryBuilder('questions')
+                .innerJoinAndSelect('questions.answers', 'answers')
+
+            if (body.categoryId) {
+                questionsQueryBuilder.where("questions.categoryId = :categoryId", {categoryId: body.categoryId})
+            }
+
+            const questions = await questionsQueryBuilder.getMany();
+
+            res.status(200).json({
+                data: {
+                    questions: questionCollectionResource(questions)
+                }
+            });
+        } catch (e) {
+            res.status(500).send({
+                data: {
+                    message: e.message
+                }
             })
         }
     })

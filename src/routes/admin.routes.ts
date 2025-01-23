@@ -22,6 +22,8 @@ adminRouter.get('/api/v1/category/:categoryId', categoryController.show)
 
 adminRouter.get('/api/v1/question/:questionId', questionController.show)
 
+adminRouter.get('/api/v1/question/', questionController.index)
+
 export {
     adminRouter
 }
