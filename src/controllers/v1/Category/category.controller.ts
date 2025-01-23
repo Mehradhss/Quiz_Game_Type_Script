@@ -4,6 +4,7 @@ import {Category} from "../../../../database/entity/Category";
 import express from "express";
 import * as expressJwt from "express-jwt";
 import {validationResult} from "express-validator";
+import {categoryResource} from "../../../resources/category.resource";
 
 export class CategoryController {
     index = asyncHandler(async (req, res) => {
@@ -29,38 +30,73 @@ export class CategoryController {
     })
 
     create = asyncHandler(async (req: expressJwt.Request, res: express.Response) => {
-            try {
-                const result1 = validationResult(req);
-                if (!result1.isEmpty()) {
-                    res.send({errors: result1.array()});
-                }
-
-                if (!req.auth?.isAdmin) {
-                    res.status(401).json({
-                        data: {
-                            message: "not authorized"
-                        }
-                    })
-                }
-
-                const body = {...req.body}
-
-                const categoryRepository = dataSource.getRepository(Category);
-
-                const category = new Category();
-                category.title = body?.title;
-                await categoryRepository.save(category)
-
-                res.status(201).json({
-                    data: {category: category}
-                })
-
-            } catch (e) {
-                res.status(500).json({
-                    message: "there is an server error please try again!"
-                })
-
-                console.log(`category creation error: ${e}`)
+        try {
+            const result1 = validationResult(req);
+            if (!result1.isEmpty()) {
+                res.send({errors: result1.array()});
             }
+
+            if (!req.auth?.isAdmin) {
+                res.status(401).json({
+                    data: {
+                        message: "not authorized"
+                    }
+                })
+            }
+
+            const body = {...req.body}
+
+            const categoryRepository = dataSource.getRepository(Category);
+
+            const category = new Category();
+            category.title = body?.title;
+            await categoryRepository.save(category)
+
+            res.status(201).json({
+                data: {category: category}
+            })
+
+        } catch (e) {
+            res.status(500).json({
+                message: "there is an server error please try again!"
+            })
+
+            console.log(`category creation error: ${e}`)
+        }
+    })
+
+    show = asyncHandler(async (req: expressJwt.Request, res: express.Response) => {
+        if (!req.auth?.isAdmin) {
+            res.status(401).json({
+                data: {
+                    message: "not authorized"
+                }
+            })
+        }
+
+        if (!req.params.categoryId) {
+            res.status(400).json({
+                data: {
+                    message: "category id is required"
+                }
+            })
+        }
+
+        const category = await dataSource.getRepository(Category).findOne({
+            where: {
+                id: parseInt(req.params.categoryId)
+            },
+            relations: ["questions"]
         })
+
+        if (!category) {
+            res.status(404).json({
+                data: {
+                    message: "category not found"
+                }
+            })
+        }
+
+        res.status(200).send({data: {category: categoryResource(category)}})
+    })
 }

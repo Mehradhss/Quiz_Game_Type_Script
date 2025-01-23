@@ -18,6 +18,8 @@ adminRouter.post('/api/v1/category/', body().custom(categoryValidator), category
 
 adminRouter.post('/api/v1/question/', body().custom(questionValidator), questionController.create)
 
+adminRouter.get('/api/v1/category/:categoryId', categoryController.show)
+
 export {
     adminRouter
 }
