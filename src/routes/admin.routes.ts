@@ -20,6 +20,8 @@ adminRouter.post('/api/v1/question/', body().custom(questionValidator), question
 
 adminRouter.get('/api/v1/category/:categoryId', categoryController.show)
 
+adminRouter.get('/api/v1/question/:questionId', questionController.show)
+
 export {
     adminRouter
 }

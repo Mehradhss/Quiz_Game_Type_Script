@@ -6,6 +6,7 @@ import {Category} from "../../../../../database/entity/Category";
 import {QuestionService} from "../../../../services/Question/question.service";
 import {questionResource} from "../../../../resources/question.resource";
 import {validationResult} from "express-validator";
+import {Question} from "../../../../../database/entity/Question";
 
 export class QuestionController {
     protected questionService;
@@ -51,5 +52,51 @@ export class QuestionController {
                 message: e.message
             })
         }
-})
+    })
+
+    show = asyncHandler(async (req: expressJwt.Request, res: express.Response) => {
+        try {
+            if (!req.auth?.isAdmin) {
+
+                res.status(401).json({
+                    data: {
+                        message: "not authorized"
+                    }
+                })
+            }
+
+            if (!req.params.questionId) {
+                res.status(400).json({
+                    data: {
+                        message: "questionId is required"
+                    }
+                })
+            }
+
+            const question = await dataSource.getRepository(Question).findOne({
+                where: {
+                    id: parseInt(req.params.questionId)
+                },
+                relations: ["answers"]
+            });
+
+            if (!question) {
+                res.status(404).json({
+                    data: {
+                        message: "question not found"
+                    }
+                })
+            }
+
+            res.status(200).json({
+                data: {
+                    question: questionResource(question)
+                }
+            });
+        } catch (e) {
+            res.status(500).json({
+                message: e.message
+            })
+        }
+    })
 }
