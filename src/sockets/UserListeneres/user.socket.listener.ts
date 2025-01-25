@@ -541,7 +541,7 @@ const userSocketListeners = asyncWrapper(async () => {
                         where: {
                             uuid: roomId
                         },
-                        relations: ["users", "games", "games.users"]
+                        relations: ["users", "games", "games.users", "games.gameRoom"]
                     });
                     await renew(`room.${roomId}`, 'room')
 
@@ -574,7 +574,7 @@ const userSocketListeners = asyncWrapper(async () => {
                         where: {
                             id: gameId
                         },
-                        relations: ["users"]
+                        relations: ["users", "gameRoom"]
                     })
 
                     if (!game.users.some(user => user.id === verifiedUserId)) {
@@ -587,7 +587,7 @@ const userSocketListeners = asyncWrapper(async () => {
 
                     await leaveGame(game, verifiedUserId);
 
-                    socket.emit("leavedGame", {data: {game: {gameId: gameId}}})
+                    socket.emit("leavedGame", {data: {game: gameResource(game)}})
 
                 }, "leaveGameError")
 
