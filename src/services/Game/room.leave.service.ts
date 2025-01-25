@@ -8,6 +8,8 @@ export const leaveRoom = async (gameRoom: GameRoom, userId, finishedStatus) => {
             return gameRoomUser.id != userId
         })
 
+        await dataSource.manager.save(gameRoom)
+
         await gameRoom.games.forEach(async (game) => {
             if (game.users.some(gameUser => gameUser.id = userId)) {
                 if (game.status === "STARTED") {
@@ -15,8 +17,6 @@ export const leaveRoom = async (gameRoom: GameRoom, userId, finishedStatus) => {
                 }
             }
         })
-
-        await dataSource.manager.save(gameRoom)
 
         return gameRoom
 
