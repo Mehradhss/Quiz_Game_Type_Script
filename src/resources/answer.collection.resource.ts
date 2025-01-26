@@ -6,6 +6,7 @@ export const answerCollectionResource = (answers: Answer[]) => {
             id: answer.id,
             text: answer.text,
             title: answer.title,
+            isCorrect: answer.is_correct
         }
     })
 }
