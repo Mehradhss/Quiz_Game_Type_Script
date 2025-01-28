@@ -21,6 +21,7 @@ export const fetchQuestion = async function (game: Game, userId) {
         const answeredGameQuestionIds = answeredGameQuestions?.map(result => result.gameQuestion_id);
 
         const availableGameQuestionsQuery = await gameQuestionRepository.createQueryBuilder("gameQuestions")
+            .innerJoinAndSelect('gameQuestions.question','question')
             .where("gameQuestions.gameId = :gameId", {gameId: game.id})
 
         if (answeredGameQuestionIds.length > 0) {
@@ -35,12 +36,12 @@ export const fetchQuestion = async function (game: Game, userId) {
             const gameQuestion = availableGameQuestions[0];
 
             const correctAnswer = await answerRepository.createQueryBuilder("answers")
-                .andWhere('answers.questionId = :questionId', {questionId: gameQuestion.id})
-                .where("answers.is_correct = 1")
+                .where('answers.questionId = :questionId', {questionId: gameQuestion.question.id})
+                .andWhere("answers.is_correct = 1")
                 .getOne();
             const wrongAnswers = await answerRepository.createQueryBuilder("answers")
-                .andWhere('answers.questionId = :questionId', {questionId: gameQuestion.id})
-                .where("answers.is_correct = 0")
+                .where('answers.questionId = :questionId', {questionId: gameQuestion.question.id})
+                .andWhere("answers.is_correct = 0")
                 .take(3)
                 .getMany();
 
