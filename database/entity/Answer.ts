@@ -43,7 +43,7 @@ export class Answer {
     @Column({nullable: true})
     title: string
 
-    @Column({nullable: false, unique: true})
+    @Column({nullable: false, unique: false})
     text: string
 
     @Column({nullable: false, default: false})

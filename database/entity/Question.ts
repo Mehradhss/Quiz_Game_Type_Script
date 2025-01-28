@@ -19,7 +19,7 @@ export class Question {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column({nullable: false, unique: true})
+    @Column({nullable: false, unique: false})
     text: string;
 
     @CreateDateColumn({type: "timestamp", default: () => "CURRENT_TIMESTAMP(6)"})
