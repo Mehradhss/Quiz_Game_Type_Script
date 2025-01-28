@@ -7,11 +7,11 @@ import {v1UserRoute} from "../../sockets/UserListeneres/user.socket.listener";
 
 const endGame = async (game: Game, finishStatus: string) => {
     try {
-        let winner: User = game.users[0];
+        let winner: User;
 
         let winnerPoints = 0
 
-        await game.users.forEach(async (user) => {
+        await Promise.all(game.users.map(async (user) => {
             const userPoints = await dataSource.getRepository(QuestionResult)
                 .createQueryBuilder('questionResults')
                 .leftJoin('questionResults.answer', 'answer')
@@ -29,7 +29,7 @@ const endGame = async (game: Game, finishStatus: string) => {
                 winner = user
                 winnerPoints = userPoints
             }
-        })
+        }))
 
         game.status = finishStatus;
         game.winner = winner;
