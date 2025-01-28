@@ -5,7 +5,7 @@ import {User} from "../../../database/entity/User";
 import {gameResource} from "../../resources/game.resource";
 import {v1UserRoute} from "../../sockets/UserListeneres/user.socket.listener";
 
-export const endGame = async (game: Game, finishStatus: string) => {
+const endGame = async (game: Game, finishStatus: string) => {
     try {
         let winner: User = game.users[0];
 
@@ -15,7 +15,7 @@ export const endGame = async (game: Game, finishStatus: string) => {
             const userPoints = await dataSource.getRepository(QuestionResult)
                 .createQueryBuilder('questionResults')
                 .leftJoin('questionResults.answer', 'answer')
-                .leftJoin('questionResults.gameQuestion' , 'gameQuestion')
+                .leftJoin('questionResults.gameQuestion', 'gameQuestion')
                 .where("questionResults.userId = :userId", {userId: user.id})
                 .andWhere("gameQuestion.gameId = :gameId", {gameId: game.id})
                 .andWhere("answer.is_correct = :isCorrect", {isCorrect: true})
@@ -42,7 +42,44 @@ export const endGame = async (game: Game, finishStatus: string) => {
             }
         })
 
-    }catch (e) {
+    } catch (e) {
         throw e
     }
 }
+
+const endGameWithWinner = async (game: Game, finishStatus: string, winner: User) => {
+    try {
+
+        const winnerPoints = await dataSource.getRepository(QuestionResult)
+            .createQueryBuilder('questionResults')
+            .leftJoin('questionResults.answer', 'answer')
+            .leftJoin('questionResults.gameQuestion', 'gameQuestion')
+            .where("questionResults.userId = :userId", {userId: winner.id})
+            .andWhere("gameQuestion.gameId = :gameId", {gameId: game.id})
+            .andWhere("answer.is_correct = :isCorrect", {isCorrect: true})
+            .getCount();
+
+        winner.total_points += winnerPoints
+        await dataSource.manager.save(winner)
+
+        game.status = finishStatus;
+        game.winner = winner;
+        await dataSource.manager.save(game)
+
+        v1UserRoute.to(game.gameRoom.uuid).emit("gameFinished", {
+            data: {
+                game: gameResource(game),
+            }
+        })
+
+    } catch (e) {
+        throw e
+    }
+
+}
+
+export {
+    endGameWithWinner,
+    endGame
+}
+

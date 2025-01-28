@@ -1,6 +1,6 @@
 import {dataSource} from "../../../database/DataSource";
 import {GameRoom} from "../../../database/entity/GameRoom";
-import {endGame} from "./game.end.service";
+import {endGameWithWinner} from "./game.end.service";
 
 export const leaveRoom = async (gameRoom: GameRoom, userId, finishedStatus) => {
     try {
@@ -13,7 +13,7 @@ export const leaveRoom = async (gameRoom: GameRoom, userId, finishedStatus) => {
         await gameRoom.games.forEach(async (game) => {
             if (game.users.some(gameUser => gameUser.id = userId)) {
                 if (game.status === "STARTED") {
-                    await endGame(game, finishedStatus);
+                    await endGameWithWinner(game, finishedStatus, gameRoom.users[0]);
                 }
             }
         })

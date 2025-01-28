@@ -12,7 +12,7 @@ import {dataSource} from "../../../database/DataSource";
 import {Category} from "../../../database/entity/Category";
 import {GameRoom} from "../../../database/entity/GameRoom";
 import {renew} from "../../services/Redis/redis.renew.expire.date.service";
-import {getJoinAbleGameRoom, getEmptyGameRoom} from "../../services/Game/game.room.search.service";
+import {getJoinAbleGameRoom} from "../../services/Game/game.room.search.service";
 import isUserJoined from "../../services/Game/room.is.user.joined.service";
 import {Game} from "../../../database/entity/Game";
 import {startGame} from "../../services/Game/game.start.service";
@@ -64,17 +64,18 @@ const userSocketListeners = asyncWrapper(async () => {
                 const redisClient = getRedisClient()
 
                 socketWrapper(socket, 'createGameRoom', async () => {
-                    const availableEmptyRoom = await getEmptyGameRoom()
-
-                    if (availableEmptyRoom) {
-                        await joinRoom(socket, availableEmptyRoom.uuid, verifiedUserId)
-
-                        redisClient.set(`room.${availableEmptyRoom.uuid}`, availableEmptyRoom.uuid, "EX", 30 * 60)
-
-                        socket.emit('gameRoomCreated', {roomId: availableEmptyRoom.uuid})
-
-                        return
-                    }
+                    /** get empty game room no longer needed*/
+                     // const availableEmptyRoom = await getEmptyGameRoom()
+                     //
+                     // if (availableEmptyRoom) {
+                     // await joinRoom(socket, availableEmptyRoom.uuid, verifiedUserId)
+                     //
+                     // redisClient.set(`room.${availableEmptyRoom.uuid}`, availableEmptyRoom.uuid, "EX", 30 * 60)
+                     //
+                     // socket.emit('gameRoomCreated', {roomId: availableEmptyRoom.uuid})
+                     //
+                     // return
+                     // }
 
                     const newRoom = await createRoom(verifiedUserId)
 
