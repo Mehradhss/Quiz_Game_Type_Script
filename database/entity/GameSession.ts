@@ -1,10 +1,13 @@
-import {CreateDateColumn, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn} from "typeorm";
+import {CreateDateColumn, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn, Column} from "typeorm";
 import {Game} from "./Game";
 
 @Entity()
 export class GameSession {
     @PrimaryGeneratedColumn()
     id: number;
+
+    @Column({nullable: true})
+    sessionTime: number
 
     @OneToOne(() => Game , (game) => game.session , {onDelete: "CASCADE"})
     @JoinColumn()

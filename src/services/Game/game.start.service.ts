@@ -26,9 +26,12 @@ export const startGame = async function (game: Game, status: string) {
 
     game.status = status;
 
-    const gameSession = new GameSession();
+    const difficultyMultiplier = game.difficulty ?? 1
+    const gameTime = fetchedQuestions.length * 30 * difficultyMultiplier;
 
+    const gameSession = new GameSession();
     gameSession.game = game;
+    gameSession.sessionTime = gameTime;
 
     await dataSource.transaction(async (transactionalEntityManager: EntityManager) => {
         try {
@@ -39,10 +42,7 @@ export const startGame = async function (game: Game, status: string) {
         }
     })
 
-    const difficultyMultiplier = game.difficulty ?? 1
-    const gameTime = fetchedQuestions.length * 30 * difficultyMultiplier;
+    redisClient.set(`started.${game.id}`, game.id, "EX", gameTime)
 
-    redisClient.set(`started.${game.id}`, game.id, "EX", gameTime + 5)
-
-    return {game : game , gameTime : gameTime};
+    return {game: game, gameTime: gameTime};
 };
