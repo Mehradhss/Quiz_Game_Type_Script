@@ -115,7 +115,7 @@ export class UserController {
             where: {
                 id: parseInt(userId)
             },
-            relations: ["games"]
+            relations: ["games", "games.winner", "games.gameRoom"]
         })
         if (!user) {
             res.status(404).json({
