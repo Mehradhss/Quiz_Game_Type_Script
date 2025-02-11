@@ -3,11 +3,18 @@ import {createRedisClient} from "./redis/RedisConfig/redis.config";
 import {config} from "dotenv";
 import {userSocketListeners} from "./sockets/UserListeneres/user.socket.listener";
 import {dataSource} from "../database/DataSource";
+import * as i18n from "i18n";
+import path from "node:path";
 
 config();
 
-const appPort = process.env.APP_PORT ?? 3000
+const i18nConfigOptions = {
+    locales: ['fa'],
+    directory: path.join(__dirname, 'lang/locales')
+}
+i18n.configure(i18nConfigOptions);
 
+const appPort = process.env.APP_PORT ?? 3000
 httpServer.listen(appPort, async () => {
     try {
         await createRedisClient().then(async () => {

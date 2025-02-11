@@ -29,6 +29,7 @@ import {jsonParser} from "../../helpers/json.parser";
 import {gameQuestionResource} from "../../resources/game.question.resource";
 import {answerCollectionResource} from "../../resources/answer.collection.resource";
 import {categoryResource} from "../../resources/category.resource";
+import * as i18n from "i18n";
 
 const gameStatus = Object.freeze({
     PENDING: 'PENDING',
@@ -92,7 +93,7 @@ const userSocketListeners = asyncWrapper(async () => {
 
                     const roomId = data.roomId
                     if (!roomId) {
-                        throw new Error("room id not found");
+                        throw new Error(i18n.__('room_id_not_provided'));
                     }
 
                     const gameRoom = await dataSource.getRepository(GameRoom).findOne({
@@ -103,17 +104,17 @@ const userSocketListeners = asyncWrapper(async () => {
                     });
 
                     if (!gameRoom) {
-                        throw new Error("room not found")
+                        throw new Error(i18n.__('room_not_found'))
                     }
 
                     if (gameRoom.users.length > 2) {
-                        throw new Error("room is full")
+                        throw new Error(i18n.__('room_is_full'))
                     }
 
                     const isVerifiedUserJoined = await isUserJoined(gameRoom, verifiedUserId);
 
                     if (isVerifiedUserJoined) {
-                        throw new Error("user already joined")
+                        throw new Error(i18n.__('user_already_joined'))
                     }
 
                     const joinedGameRoom = await joinRoom(socket, roomId, verifiedUserId);
@@ -133,14 +134,13 @@ const userSocketListeners = asyncWrapper(async () => {
 
                     console.log('User joined game with room ID:', roomId);
 
-
                 }, "gameRoomJoinError")
 
                 socketWrapper(socket, 'searchForGameRoom', async () => {
                     const joinAbleGameRoom = await getJoinAbleGameRoom(verifiedUserId)
 
                     if (!joinAbleGameRoom) {
-                        throw new Error("no joinable game room found.")
+                        throw new Error(i18n.__('no_joinable_game_room_found.'))
                     }
 
                     await renew(`room.${joinAbleGameRoom.uuid}`, 'room')
@@ -162,11 +162,11 @@ const userSocketListeners = asyncWrapper(async () => {
                     });
 
                     if (!roomId || !gameRoom) {
-                        throw new Error("room not found")
+                        throw new Error(i18n.__('room_not_found'))
                     }
 
                     if (!await isUserJoined(gameRoom, verifiedUserId)) {
-                        throw new Error("user is not joined in the given room!")
+                        throw new Error(i18n.__('user_is_not_joined_in_the_given_room'))
                     }
 
                     const categoryId = data.categoryId;
@@ -197,12 +197,12 @@ const userSocketListeners = asyncWrapper(async () => {
 
                     const roomId = data.roomId;
                     if (!roomId) {
-                        throw new Error('room id not provided');
+                        throw new Error(i18n.__('room_id_not_provided'));
                     }
 
                     const categoryId = data.categoryId;
                     if (!categoryId) {
-                        throw new Error("category not provided")
+                        throw new Error(i18n.__('category_not_provided'))
                     }
 
                     const socketRoom = v1UserRoute.adapter.rooms.get(roomId);
@@ -215,19 +215,19 @@ const userSocketListeners = asyncWrapper(async () => {
                     })
 
                     if (!socketRoom || !gameRoom) {
-                        throw new Error('room not found');
+                        throw new Error(i18n.__('room_not_found'));
                     }
 
                     if (socketRoom.size < 2) {
-                        throw new Error("a user disconnected")
+                        throw new Error(i18n.__('a_user_disconnected'))
                     }
 
                     if (gameRoom.users.length < 2) {
-                        throw new Error("not enough players");
+                        throw new Error(i18n.__('not_enough_players'));
                     }
 
                     if (!await isUserJoined(gameRoom, verifiedUserId)) {
-                        throw new Error("user not joined");
+                        throw new Error(i18n.__('user_is_not_joined_in_the_given_room'));
                     }
 
                     socket.join(gameRoom.uuid)
@@ -253,12 +253,12 @@ const userSocketListeners = asyncWrapper(async () => {
 
                     const roomId = data.roomId
                     if (!roomId) {
-                        throw new Error("room id not provided")
+                        throw new Error(i18n.__('room_id_not_provided'))
                     }
 
                     const gameId = data.gameId
                     if (!gameId) {
-                        throw new Error("game id not provided")
+                        throw new Error(i18n.__('game_id_not_provided'))
                     }
                     const game = await dataSource.getRepository(Game).findOneOrFail({
                         where: {
@@ -268,11 +268,11 @@ const userSocketListeners = asyncWrapper(async () => {
                     })
 
                     if (game.status === gameStatus.STARTED) {
-                        throw new Error("game already started")
+                        throw new Error(i18n.__('game_already_started'))
                     }
 
                     if (game.users.length < 2) {
-                        throw new Error("not enough players to ready up !");
+                        throw new Error(i18n.__('not_enough_players_to_ready_up'));
                     }
 
                     const playerReadyKey = `game.${gameId}.ready.players`;
@@ -281,7 +281,7 @@ const userSocketListeners = asyncWrapper(async () => {
 
                     if (await redisClient.exists(playerReadyKey)) {
                         if (await redisClient.hexists(playerReadyKey, stringUserId)) {
-                            throw new Error('player already readied up !')
+                            throw new Error(i18n.__('player_already_readied_up'))
                         }
                     }
 
@@ -303,12 +303,12 @@ const userSocketListeners = asyncWrapper(async () => {
 
                     const roomId = data.roomId
                     if (!roomId) {
-                        throw new Error("room id not provided")
+                        throw new Error(i18n.__('room_id_not_provided'))
                     }
 
                     const gameId = data.gameId
                     if (!gameId) {
-                        throw new Error("game id not provided")
+                        throw new Error(i18n.__('game_id_not_provided'))
                     }
                     const game = await dataSource.getRepository(Game).findOneOrFail({
                         where: {
@@ -318,11 +318,11 @@ const userSocketListeners = asyncWrapper(async () => {
                     })
 
                     if (game.status === gameStatus.STARTED) {
-                        throw new Error("game already started")
+                        throw new Error(i18n.__('game_already_started'))
                     }
 
                     if (game.users.length < 2) {
-                        throw new Error("not enough players to ready up !");
+                        throw new Error(i18n.__('not_enough_players_to_ready_up'));
                     }
 
                     const playerReadyKey = `game.${gameId}.ready.players`;
@@ -330,7 +330,7 @@ const userSocketListeners = asyncWrapper(async () => {
                     const stringUserId = verifiedUserId.toString();
 
                     if (!await redisClient.exists(playerReadyKey) || !await redisClient.hexists(playerReadyKey, stringUserId)) {
-                        throw new Error('player has not readied up yet!')
+                        throw new Error(i18n.__('player_has_not_readied_up_yet'))
                     }
 
                     await redisClient.hdel(playerReadyKey, stringUserId)
@@ -393,13 +393,13 @@ const userSocketListeners = asyncWrapper(async () => {
 
                     const roomId = data.roomId
                     if (!roomId) {
-                        throw new Error("room id not provided")
+                        throw new Error(i18n.__('room_id_not_provided'))
                     }
                     // const socketRoom = v1UserRoute.adapter.rooms.get(roomId);
 
                     const gameId = data.gameId;
                     if (!gameId) {
-                        throw new Error("game id not provided")
+                        throw new Error(i18n.__('game_id_not_provided'))
                     }
 
                     // if (socketRoom.size < 2) {
@@ -408,7 +408,7 @@ const userSocketListeners = asyncWrapper(async () => {
 
                     const playerReadyKey = `game.${gameId}.ready.players`;
                     if (!await redisClient.exists(playerReadyKey) || await redisClient.hlen(playerReadyKey) < 2) {
-                        throw new Error("players must ready up")
+                        throw new Error(i18n.__('players_must_ready_up'))
                     }
 
                     const game = await dataSource.getRepository(Game).findOneOrFail({
@@ -418,15 +418,15 @@ const userSocketListeners = asyncWrapper(async () => {
                         relations: ["users", "gameQuestions", "category", "session"]
                     });
                     if (game.status === gameStatus.STARTED) {
-                        throw new Error("game already started")
+                        throw new Error(i18n.__('game_already_started'))
                     }
 
                     if (game.status === gameStatus.FINISHED) {
-                        throw new Error("game is finished.")
+                        throw new Error(i18n.__('game_finished'))
                     }
 
                     if (game.users.length < 2) {
-                        throw new Error("not enough players to start game !");
+                        throw new Error(i18n.__('not_enough_players'));
                     }
 
                     await renew(playerReadyKey, "game")
@@ -448,13 +448,13 @@ const userSocketListeners = asyncWrapper(async () => {
 
                     const roomId = data.roomId
                     if (!roomId) {
-                        throw new Error("room id not provided")
+                        throw new Error(i18n.__('room_id_not_provided'))
                     }
                     await renew(`room.${roomId}`, 'room')
 
                     const gameId = data.gameId;
                     if (!gameId) {
-                        throw new Error("game id not provided")
+                        throw new Error(i18n.__('game_id_not_provided'))
                     }
                     const game = await dataSource.getRepository(Game).findOne({
                         where: {
@@ -464,28 +464,28 @@ const userSocketListeners = asyncWrapper(async () => {
                     });
 
                     if (!game) {
-                        throw new Error("game not found");
+                        throw new Error(i18n.__('game_not_found'));
                     }
                     if (game.status === gameStatus.FINISHED) {
-                        throw new Error("game is finished");
+                        throw new Error(i18n.__('game_finished'));
                     }
 
                     if (game.users.length < 2) {
-                        throw new Error("not enough players to continue the game !");
+                        throw new Error(i18n.__('not_enough_players_to_continue_the_game'));
                     }
 
                     if (game.status != gameStatus.STARTED) {
                         if (game.status === gameStatus.FINISHED) {
-                            throw new Error("this game is finished!")
+                            throw new Error(i18n.__('game_finished'))
                         }
 
-                        throw new Error("game has not started yet!");
+                        throw new Error(i18n.__('game_has_not_started_yet'));
                     }
 
                     const fetchedGameQuestion = await fetchQuestion(game, verifiedUserId)
 
                     if (!fetchedGameQuestion) {
-                        throw new Error("all questions are  answered!")
+                        throw new Error(i18n.__('all_questions_are_answered'))
                     }
 
                     socket.emit("questionFetched", {
@@ -502,13 +502,13 @@ const userSocketListeners = asyncWrapper(async () => {
 
                     const roomId = data.roomId
                     if (!roomId) {
-                        throw new Error("room id not provided")
+                        throw new Error(i18n.__('room_id_not_provided'))
                     }
                     await renew(`room.${roomId}`, 'room')
 
                     const gameId = data.gameId;
                     if (!gameId) {
-                        throw new Error("game id not provided")
+                        throw new Error(i18n.__('game_id_not_provided'))
                     }
 
                     const game = await dataSource.getRepository(Game).findOne({
@@ -517,7 +517,7 @@ const userSocketListeners = asyncWrapper(async () => {
                         }
                     })
                     if (!game) {
-                        throw new Error("game not found")
+                        throw new Error(i18n.__('game_not_found'))
                     }
                     if (game.status === gameStatus.FINISHED) {
                         throw new Error("game is finished")

@@ -1,0 +1,22 @@
+{
+    "room_id_not_provided": "شناسه اتاق بازی داده نشده است",
+    "game_id_not_provided": "شناسه بازی داده نشده است",
+    "not_enough_players_to_continue_the_game": "بازیکنان کافی برای ادامه بازی وجود ندارد",
+    "room_not_found": "اتاق پیدا نشد",
+    "room_is_full": "اتاق پر است",
+    "user_already_joined": "کاربر قبلا عضو شده است",
+    "no_joinable_game_room_found": "هیج اتاقی برای عضویت پیدا نشد",
+    "user_is_not_joined_in_the_given_room": "این کاریر در اتاق داده شده عضو نشده است",
+    "category_not_provided": "دسته بندی داده نشده است ",
+    "a_user_disconnected": "کاربری اتصال خود را از دست داده است",
+    "not_enough_players": "تعداد بازیکنان کافی نیست",
+    "game_already_started": "این بازی قبلا آغاز شده است",
+    "game_has_not_started_yet": "بازی هنوز آغاز نشده است",
+    "game_finished": "بازی به پایان رسیده است",
+    "all_questions_are_answered": "به همه سوالات پاسخ داده شده است",
+    "game_not_found": "بازی با این مشخصات یافت نشد",
+    "not_enough_players_to_ready_up": "تعداد بازیکنان برای آماده سازی برای شروع بازی کافی نیست",
+    "player_already_readied_up": "بازیکن قبلا برای بازی آماده شده است",
+    "player_has_not_readied_up_yet": "بازیکن هنوز آماده سازی خود را اعلام نکرده است",
+    "players_must_ready_up": "بازیکنان باید آماده سازی خود را اعلام کنند"
+}
