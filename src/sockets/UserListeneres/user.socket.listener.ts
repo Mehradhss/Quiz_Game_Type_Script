@@ -435,9 +435,16 @@ const userSocketListeners = asyncWrapper(async () => {
 
                     const startedGame = await startGame(game, gameStatus.STARTED)
 
+                     const startedGameWithSession = await dataSource.getRepository(Game).findOneOrFail({
+                        where: {
+                            id: startedGame.game.id
+                        },
+                        relations: ["users", "gameQuestions", "category", "session"]
+                    });
+
                     v1UserRoute.to(roomId).emit("gameStarted", {
                         data: {
-                            game: gameResource(startedGame.game),
+                            game: gameResource(startedGameWithSession),
                             gameTime: startedGame.gameTime
                         }
                     })
