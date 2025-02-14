@@ -348,7 +348,7 @@ const userSocketListeners = asyncWrapper(async () => {
 
                     const gameId = data.gameId
                     if (!gameId) {
-                        throw new Error("game id not provided")
+                        throw new Error(i18n.__('game_id_not_provided'))
                     }
                     const game = await dataSource.getRepository(Game).findOneOrFail({
                         where: {
@@ -527,7 +527,7 @@ const userSocketListeners = asyncWrapper(async () => {
                         throw new Error(i18n.__('game_not_found'))
                     }
                     if (game.status === gameStatus.FINISHED) {
-                        throw new Error("game is finished")
+                        throw new Error(i18n.__('game_finished'))
                     }
 
                     const answer = data.answer;
@@ -543,7 +543,7 @@ const userSocketListeners = asyncWrapper(async () => {
 
                     const roomId = data.roomId
                     if (!roomId) {
-                        throw new Error("room id not provided")
+                        throw new Error(i18n.__('room_id_not_provided'))
                     }
                     const gameRoom = await dataSource.getRepository(GameRoom).findOneOrFail({
                         where: {
@@ -556,7 +556,7 @@ const userSocketListeners = asyncWrapper(async () => {
                     const isVerifiedUserJoined = await isUserJoined(gameRoom, verifiedUserId);
 
                     if (!isVerifiedUserJoined) {
-                        throw new Error("user is not in the room!")
+                        throw new Error(i18n.__('user_is_not_joined_in_the_given_room'))
                     }
 
                     const leavedGameRoom = await leaveRoom(gameRoom, verifiedUserId, gameStatus.FINISHED)
@@ -569,13 +569,13 @@ const userSocketListeners = asyncWrapper(async () => {
 
                     const roomId = data.roomId
                     if (!roomId) {
-                        throw new Error("room id not provided")
+                        throw new Error(i18n.__('room_id_not_provided'))
                     }
                     await renew(`room.${roomId}`, 'room')
 
                     const gameId = data.gameId;
                     if (!gameId) {
-                        throw new Error("game id not provided")
+                        throw new Error(i18n.__('game_id_not_provided'))
                     }
 
                     const game = await dataSource.getRepository(Game).findOneOrFail({
@@ -586,11 +586,11 @@ const userSocketListeners = asyncWrapper(async () => {
                     })
 
                     if (!game.users.some(user => user.id === verifiedUserId)) {
-                        throw new Error("user is not in the game!")
+                        throw new Error(i18n.__('user_is_not_in_the_game'))
                     }
 
                     if (game.status != gameStatus.STARTED) {
-                        throw new Error("cannot leave a game that has not been started yet!")
+                        throw new Error(i18n.__('cannot_leave_a_game_that_has_not_been_started_yet'))
                     }
 
                     await leaveGame(game, verifiedUserId);
@@ -604,7 +604,7 @@ const userSocketListeners = asyncWrapper(async () => {
 
                     const gameId = data.gameId;
                     if (!gameId) {
-                        throw new Error("game id not provided")
+                        throw new Error(i18n.__('game_id_not_provided'))
                     }
 
                     const game = await dataSource.getRepository(Game).findOneOrFail({
@@ -617,11 +617,11 @@ const userSocketListeners = asyncWrapper(async () => {
                     await renew(`room.${game.gameRoom.uuid}`, 'room')
 
                     if (!game.users.some(user => user.id === verifiedUserId)) {
-                        throw new Error("user is not in the game!");
+                        throw new Error(i18n.__('user_is_not_in_the_game'));
                     }
 
                     if (game.status === gameStatus.FINISHED) {
-                        throw new Error("game is already finished")
+                        throw new Error(i18n.__('game_finished'))
                     }
 
                     const playerEndKey = `ended.${gameId}`
@@ -630,7 +630,7 @@ const userSocketListeners = asyncWrapper(async () => {
 
                     if (await redisClient.exists(playerEndKey)) {
                         if (await redisClient.hexists(playerEndKey, stringUserId)) {
-                            throw new Error('the game for this player has already ended!')
+                            throw new Error(i18n.__('the_game_for_this_player_has_already_ended'))
                         }
                     }
 
@@ -664,7 +664,7 @@ const userSocketListeners = asyncWrapper(async () => {
 
                     const gameId = data.gameId;
                     if (!gameId) {
-                        throw new Error("game id not provided")
+                        throw new Error(i18n.__('game_id_not_provided'))
                     }
 
                     const game = await dataSource.getRepository(Game).findOneOrFail({
@@ -677,11 +677,11 @@ const userSocketListeners = asyncWrapper(async () => {
                     await renew(`room.${game.gameRoom.uuid}`, 'room')
 
                     if (!game.users.some(user => user.id === verifiedUserId)) {
-                        throw new Error("user is not in the game!")
+                        throw new Error(i18n.__('user_is_not_in_the_game'))
                     }
 
                     if (game.status === gameStatus.FINISHED) {
-                        throw new Error("game is already finished")
+                        throw new Error(i18n.__('game_finished'))
                     }
 
                     await endGame(game, gameStatus.FINISHED);
