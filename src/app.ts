@@ -10,7 +10,8 @@ config();
 
 const i18nConfigOptions = {
     locales: ['fa'],
-    directory: path.join(__dirname, 'lang/locales')
+    directory: path.join(__dirname, 'lang/locales'),
+    defaultLocale: 'fa'
 }
 i18n.configure(i18nConfigOptions);
 

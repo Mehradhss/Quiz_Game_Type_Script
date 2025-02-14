@@ -9,7 +9,8 @@ export default function socketWrapper(socket: Socket, eventName: string, handler
 
             const dataToEmit = {
                 error: {
-                    message: `an ${exceptionName} accord: ${error.message}}`
+                    message: `${error.message}`,
+                    exception: exceptionName
                 }
             };
 
